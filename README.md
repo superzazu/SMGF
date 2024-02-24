@@ -15,7 +15,7 @@ Features:
 - open source under the zlib license, which means you can use it and
   distribute your games freely and free of charge
 
-[Get started here!](https://superzazu.github.io/smgf/docs/getting-started/)
+[Get started here!](https://superzazu.github.io/SMGF/docs/getting-started/)
 
 ## examples
 

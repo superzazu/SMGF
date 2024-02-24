@@ -7,7 +7,7 @@ sidebar_position: 2
 
 ## installation
 
-Download compiled binaries from GitHub [here](https://github.com/superzazu/smgf/releases/latest) for your platform and unzip the file on your computer.
+Download compiled binaries from GitHub [here](https://github.com/superzazu/SMGF/releases/latest) for your platform and unzip the file on your computer.
 
 :::note
 
@@ -91,7 +91,7 @@ On macOS, put your `game.smgf` file inside `SMGF.app`: right click on the app bu
 ## how to run your game on the web
 
 You need to install [emscripten](https://emscripten.org/docs/getting_started/downloads.html).
-Then, download [smgf-web](https://github.com/superzazu/smgf/releases/latest) from GitHub.
+Then, download [smgf-web](https://github.com/superzazu/SMGF/releases/latest) from GitHub.
 
 Run the following command to run SMGF in your browser:
 

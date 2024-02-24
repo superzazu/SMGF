@@ -16,12 +16,12 @@ const config: Config = {
   url: "https://superzazu.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/smgf/",
+  baseUrl: "/SMGF/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "superzazu", // Usually your GitHub org/user name.
-  projectName: "smgf", // Usually your repo name.
+  projectName: "SMGF", // Usually your repo name.
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -40,7 +40,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: "https://github.com/superzazu/smgf/tree/master/docs/",
+          editUrl: "https://github.com/superzazu/SMGF/tree/master/docs/",
         },
         blog: false,
         theme: {
@@ -66,11 +66,11 @@ const config: Config = {
         },
         {
           label: "Download",
-          href: "https://github.com/superzazu/smgf/releases/latest",
+          href: "https://github.com/superzazu/SMGF/releases/latest",
         },
         // { to: "/blog", label: "Blog", position: "left" },
         {
-          href: "https://github.com/superzazu/smgf",
+          href: "https://github.com/superzazu/SMGF",
           label: "GitHub",
           position: "right",
         },
@@ -88,7 +88,7 @@ const config: Config = {
             },
             {
               label: "Download",
-              href: "https://github.com/superzazu/smgf/releases/latest",
+              href: "https://github.com/superzazu/SMGF/releases/latest",
             },
           ],
         },
