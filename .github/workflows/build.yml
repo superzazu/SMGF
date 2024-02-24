@@ -1,0 +1,168 @@
+# TODO:
+# - [ ] AppImage on Linux
+
+name: SMGF build
+
+on:
+  push:
+    branches: ["master"]
+    paths-ignore:
+      - "**.md"
+      - "docs-api/*"
+      - "scripts/*"
+    tags:
+      - "v*"
+  pull_request:
+    branches: ["master"]
+    paths-ignore:
+      - "**.md"
+      - "docs-api/*"
+      - "scripts/*"
+
+env:
+  BUILD_TYPE: Release
+  # @TODO: probably don't *need* to specify target name when building
+  TARGET_NAME: SMGF
+
+# cancel builds already in progress (if any)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # build-linux:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
+  #     - name: "Install dependencies"
+  #       run: |
+  #         sudo add-apt-repository universe
+  #         sudo apt-get update
+  #         sudo apt-get install libsdl2-dev
+  #     - name: "Configure"
+  #       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=/usr
+  #     - name: "Build"
+  #       run: cmake --build ${{github.workspace}}/build --target ${{env.TARGET_NAME}} --config ${{env.BUILD_TYPE}}
+  #     - name: "Install"
+  #       run: cmake --install build --config ${{env.BUILD_TYPE}} --prefix dist/
+  #       # run: make install DESTDIR=AppDir
+  #     - name: "Prepare artifact"
+  #       working-directory: dist
+  #       run: 7z a -tzip smgf-nux.zip .
+  #     - name: "Upload artifact"
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: smgf-nux
+  #         path: dist/smgf-nux.zip
+  #         if-no-files-found: error
+  build-mac:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: "Install dependencies"
+        run: |
+          curl -L -o sdl.dmg https://github.com/libsdl-org/SDL/releases/download/release-2.28.3/SDL2-2.28.3.dmg
+          hdiutil attach ./sdl.dmg -mountpoint ${{ runner.temp }}/sdl
+          mkdir -p ~/Library/Frameworks
+          cp -a ${{ runner.temp }}/sdl/SDL2.framework ~/Library/Frameworks
+          hdiutil detach ${{ runner.temp }}/sdl
+      - name: "Configure"
+        run: cmake -S . -B ${{github.workspace}}/build -G Xcode
+      - name: "Build"
+        run: cmake --build ${{github.workspace}}/build --target ${{env.TARGET_NAME}} --config ${{env.BUILD_TYPE}}
+      - name: "Install"
+        run: cmake --install build --config ${{env.BUILD_TYPE}} --prefix dist/
+      - name: "Prepare artifact"
+        working-directory: dist
+        run: 7z a -tzip smgf-mac.zip smgf.app
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: smgf-mac
+          path: dist/smgf-mac.zip
+          if-no-files-found: error
+  # - name: "Create release"
+  #   env:
+  #     GH_TOKEN: ${{ github.token }}
+  #   run: |
+  #     gh release create ${{  github.ref_name }} --generate-notes smgf-mac.zip
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: "Install dependencies"
+        run: |
+          curl -L -o sdl.zip https://github.com/libsdl-org/SDL/releases/download/release-2.28.3/SDL2-devel-2.28.3-VC.zip
+          unzip sdl.zip -d "C:\Program Files\"
+      - name: "Configure"
+        run: cmake -S . -B ${{github.workspace}}/build
+      - name: "Build"
+        run: cmake --build ${{github.workspace}}/build --target ${{env.TARGET_NAME}} --config ${{env.BUILD_TYPE}}
+      - name: "Install"
+        run: cmake --install build --config ${{env.BUILD_TYPE}} --prefix dist/
+      - name: "Prepare artifact"
+        working-directory: dist
+        run: 7z a -tzip smgf-win.zip .
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: smgf-win
+          path: dist/smgf-win.zip
+          if-no-files-found: error
+  build-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      # @TODO: find a way to avoid doing "source ./emsdk/emsdk_env.sh &&" before each step.
+      - name: "Install dependencies"
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+          source ./emsdk_env.sh
+      - name: "Configure"
+        run: source ./emsdk/emsdk_env.sh && emcmake cmake -S . -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: "Build"
+        run: source ./emsdk/emsdk_env.sh && cmake --build ${{github.workspace}}/build --target ${{env.TARGET_NAME}} --config ${{env.BUILD_TYPE}}
+      - name: "Install"
+        run: cmake --install build --config ${{env.BUILD_TYPE}} --prefix dist/
+      - name: "Prepare artifact"
+        working-directory: dist
+        run: 7z a -tzip smgf-web.zip .
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: smgf-web
+          path: dist/smgf-web.zip
+          if-no-files-found: error
+  make-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    needs: [build-mac, build-windows, build-web]
+    steps:
+      - name: "Download artifacts"
+        uses: actions/download-artifact@v3
+        with:
+          path: dist
+      - name: "Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          files: |
+            dist/smgf-mac/smgf-mac.zip
+            dist/smgf-win/smgf-win.zip
+            dist/smgf-web/smgf-web.zip

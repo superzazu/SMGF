@@ -1,0 +1,10 @@
+.DS_Store
+.vscode
+.cache
+build
+build-web
+build-win
+docs/_build
+docs/tmp
+dist
+todo.md

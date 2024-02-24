@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/LLS-Addons/main/schemas/addon_config.schema.json",
+  "name": "SMGF",
+  "words": ["smgf%.%w+"],
+  "settings": {
+    "Lua.runtime.version": "Lua 5.4",
+    "Lua.runtime.builtin": {
+      "basic": "default",
+      "bit": "default",
+      "bit32": "default",
+      "builtin": "default",
+      "coroutine": "default",
+      "debug": "default",
+      "ffi": "default",
+      "io": "default",
+      "jit": "default",
+      "jit.profile": "default",
+      "jit.util": "default",
+      "math": "default",
+      "os": "default",
+      "package": "default",
+      "string": "default",
+      "string.buffer": "default",
+      "table": "default",
+      "table.clear": "default",
+      "table.new": "default",
+      "utf8": "default"
+    }
+  }
+}
