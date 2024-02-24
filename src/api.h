@@ -9,13 +9,13 @@
 #include "smgf.h"
 
 // Functions in API are named this way: `sf.<module (2 letters)>.<function>`:
-// - sf_gr = SgmF GRaphics
-// - sf_sy = SgmF SYstem
-// - sf_kb = SgmF KeyBoard
-// - sf_ms = SgmF MouSe
-// - sf_au = SgmF AUdio
-// - sf_io = SgmF I/O
-// - sf_gp = SgmF GamePad
+// - sf_gr = SmgF GRaphics
+// - sf_sy = SmgF SYstem
+// - sf_kb = SmgF KeyBoard
+// - sf_ms = SmgF MouSe
+// - sf_au = SmgF AUdio
+// - sf_io = SmgF I/O
+// - sf_gp = SmgF GamePad
 
 // graphics
 int sf_gr_set_target(smgf* const c, stexture* const t);

@@ -125,7 +125,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug # or Release or RelWithDebInfo
 cmake --build .
 ```
 
-This should get you the `sgmf` executable needed for development.
+This should get you the `smgf` executable needed for development.
 
 :::tip
 
