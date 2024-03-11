@@ -374,6 +374,7 @@ int main(int argc, char** argv) {
       flag_targettexture ? "yes" : "no");
 
   smgf_linit(&c);
+  SDL_RaiseWindow(c.window);
 
 #ifdef __EMSCRIPTEN__
   emscripten_set_main_loop(mainloop, 0, 1);
