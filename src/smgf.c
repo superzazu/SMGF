@@ -276,6 +276,7 @@ int smgf_init(smgf* const c, const char* game_folder) {
 
   c->gstates = SDL_calloc(MAX_NB_GSTATES, sizeof(smgf_graphic_state));
   c->gstates_ptr = 0;
+  c->curstate = &c->gstates[c->gstates_ptr];
   sf_gr_reset_graphics_stack(c);
 
   // clearing screen texture once
@@ -318,6 +319,7 @@ int smgf_quit(smgf* const c) {
   if (c->screen_texture != NULL) {
     SDL_free(c->screen_texture);
   }
+  c->curstate = NULL;
   SDL_free(c->gstates);
   DBGP_CloseFont(&c->font);
   sf_sy_set_identity(c, NULL, NULL);

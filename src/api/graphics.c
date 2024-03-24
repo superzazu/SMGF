@@ -5,34 +5,34 @@ int sf_gr_set_target(smgf* const c, stexture* const t) {
   int result = SDL_SetRenderTarget(c->renderer, target->tex);
 
   if (result == 0) {
-    c->gstates[c->gstates_ptr].target = t;
+    c->curstate->target = t;
   }
 
   return result;
 }
 
 // int sf_gr_get_target(smgf* const c, stexture** const t) {
-//   if (c->gstates[c->gstates_ptr].target == NULL) {
+//   if (c->curstate->target == NULL) {
 //     *t = c->screen_texture;
 //   } else {
-//     *t = c->gstates[c->gstates_ptr].target;
+//     *t = c->curstate->target;
 //   }
 //   return 0;
 // }
 
 int sf_gr_set_color(smgf* const c, SDL_Color* color) {
-  c->gstates[c->gstates_ptr].r = color->r;
-  c->gstates[c->gstates_ptr].g = color->g;
-  c->gstates[c->gstates_ptr].b = color->b;
-  c->gstates[c->gstates_ptr].a = color->a;
+  c->curstate->r = color->r;
+  c->curstate->g = color->g;
+  c->curstate->b = color->b;
+  c->curstate->a = color->a;
   return 0;
 }
 
 int sf_gr_get_color(smgf* const c, SDL_Color* color) {
-  color->r = c->gstates[c->gstates_ptr].r;
-  color->g = c->gstates[c->gstates_ptr].g;
-  color->b = c->gstates[c->gstates_ptr].b;
-  color->a = c->gstates[c->gstates_ptr].a;
+  color->r = c->curstate->r;
+  color->g = c->curstate->g;
+  color->b = c->curstate->b;
+  color->a = c->curstate->a;
   return 0;
 }
 
@@ -83,19 +83,21 @@ int sf_gr_push_state(smgf* const c) {
   }
 
   c->gstates_ptr += 1;
-  sf_gr_reset_state(c, &c->gstates[c->gstates_ptr]);
+  c->curstate = &c->gstates[c->gstates_ptr];
+  sf_gr_reset_state(c, c->curstate);
   sf_gr_set_target(c, NULL);
 
   return 0;
 }
 
 int sf_gr_pop_state(smgf* const c) {
-  sf_gr_reset_state(c, &c->gstates[c->gstates_ptr]);
+  sf_gr_reset_state(c, c->curstate);
   c->gstates_ptr -= 1;
   if (c->gstates_ptr < 0) {
     c->gstates_ptr = 0;
   }
-  sf_gr_set_target(c, c->gstates[c->gstates_ptr].target);
+  c->curstate = &c->gstates[c->gstates_ptr];
+  sf_gr_set_target(c, c->curstate->target);
 
   return 0;
 }
@@ -110,74 +112,65 @@ int sf_gr_reset_graphics_stack(smgf* const c) {
 }
 
 void sf_gr_set_translation(smgf* const c, int x, int y) {
-  c->gstates[c->gstates_ptr].x = x;
-  c->gstates[c->gstates_ptr].y = y;
+  c->curstate->x = x;
+  c->curstate->y = y;
 }
 
 void sf_gr_get_translation(smgf* const c, int* x, int* y) {
-  *x = c->gstates[c->gstates_ptr].x;
-  *y = c->gstates[c->gstates_ptr].y;
+  *x = c->curstate->x;
+  *y = c->curstate->y;
 }
 
 // warning: this is a very slow operation, it should only be used for testing
 // purposes.
 int sf_gr_get_point(smgf* const c, SDL_Color* color, int x, int y) {
-  SDL_Rect pixel_rect = {
-      c->gstates[c->gstates_ptr].x + x, c->gstates[c->gstates_ptr].y + y, 1, 1};
+  SDL_Rect pixel_rect = {c->curstate->x + x, c->curstate->y + y, 1, 1};
   return SDL_RenderReadPixels(
       c->renderer, &pixel_rect, SDL_PIXELFORMAT_RGB24, color, 32);
 }
 
 int sf_gr_draw_point(smgf* const c, float x, float y) {
   if (SDL_SetRenderDrawColor(
-          c->renderer, c->gstates[c->gstates_ptr].r,
-          c->gstates[c->gstates_ptr].g, c->gstates[c->gstates_ptr].b,
-          c->gstates[c->gstates_ptr].a) != 0) {
+          c->renderer, c->curstate->r, c->curstate->g, c->curstate->b,
+          c->curstate->a) != 0) {
     return -1;
   }
 
   return SDL_RenderDrawPointF(
-      c->renderer, c->gstates[c->gstates_ptr].x + x,
-      c->gstates[c->gstates_ptr].y + y);
+      c->renderer, c->curstate->x + x, c->curstate->y + y);
 }
 
 int sf_gr_draw_line(smgf* const c, float x1, float y1, float x2, float y2) {
   if (SDL_SetRenderDrawColor(
-          c->renderer, c->gstates[c->gstates_ptr].r,
-          c->gstates[c->gstates_ptr].g, c->gstates[c->gstates_ptr].b,
-          c->gstates[c->gstates_ptr].a) != 0) {
+          c->renderer, c->curstate->r, c->curstate->g, c->curstate->b,
+          c->curstate->a) != 0) {
     return -1;
   }
 
   return SDL_RenderDrawLineF(
-      c->renderer, c->gstates[c->gstates_ptr].x + x1,
-      c->gstates[c->gstates_ptr].y + y1, c->gstates[c->gstates_ptr].x + x2,
-      c->gstates[c->gstates_ptr].y + y2);
+      c->renderer, c->curstate->x + x1, c->curstate->y + y1,
+      c->curstate->x + x2, c->curstate->y + y2);
 }
 
 int sf_gr_draw_rect(smgf* const c, float x, float y, float w, float h) {
   if (SDL_SetRenderDrawColor(
-          c->renderer, c->gstates[c->gstates_ptr].r,
-          c->gstates[c->gstates_ptr].g, c->gstates[c->gstates_ptr].b,
-          c->gstates[c->gstates_ptr].a) != 0) {
+          c->renderer, c->curstate->r, c->curstate->g, c->curstate->b,
+          c->curstate->a) != 0) {
     return -1;
   }
 
-  SDL_FRect r = {
-      c->gstates[c->gstates_ptr].x + x, c->gstates[c->gstates_ptr].y + y, w, h};
+  SDL_FRect r = {c->curstate->x + x, c->curstate->y + y, w, h};
   return SDL_RenderDrawRectF(c->renderer, &r);
 }
 
 int sf_gr_draw_rectfill(smgf* const c, float x, float y, float w, float h) {
   if (SDL_SetRenderDrawColor(
-          c->renderer, c->gstates[c->gstates_ptr].r,
-          c->gstates[c->gstates_ptr].g, c->gstates[c->gstates_ptr].b,
-          c->gstates[c->gstates_ptr].a) != 0) {
+          c->renderer, c->curstate->r, c->curstate->g, c->curstate->b,
+          c->curstate->a) != 0) {
     return -1;
   }
 
-  SDL_FRect r = {
-      c->gstates[c->gstates_ptr].x + x, c->gstates[c->gstates_ptr].y + y, w, h};
+  SDL_FRect r = {c->curstate->x + x, c->curstate->y + y, w, h};
   return SDL_RenderFillRectF(c->renderer, &r);
 }
 
@@ -254,14 +247,12 @@ int sf_gr_texture_draw(
 
   SDL_Rect srcrect = {qx, qy, qw, qh};
   SDL_FRect dstrect = {
-      c->gstates[c->gstates_ptr].x + x, c->gstates[c->gstates_ptr].y + y,
-      qw * sx, qh * sy};
+      c->curstate->x + x, c->curstate->y + y, qw * sx, qh * sy};
   SDL_FPoint center = {ox, oy};
 
   SDL_SetTextureColorMod(
-      t->tex, c->gstates[c->gstates_ptr].r, c->gstates[c->gstates_ptr].g,
-      c->gstates[c->gstates_ptr].b);
-  SDL_SetTextureAlphaMod(t->tex, c->gstates[c->gstates_ptr].a);
+      t->tex, c->curstate->r, c->curstate->g, c->curstate->b);
+  SDL_SetTextureAlphaMod(t->tex, c->curstate->a);
 
   return SDL_RenderCopyExF(
       c->renderer, t->tex, &srcrect, &dstrect, r, &center, flip);
@@ -290,10 +281,10 @@ int sf_gr_texture_save(smgf* const c, stexture* const t, const char* filename) {
     return 1;
   }
 
-  if (c->gstates[c->gstates_ptr].target == NULL) {
+  if (c->curstate->target == NULL) {
     SDL_SetRenderTarget(c->renderer, c->screen_texture->tex);
   } else {
-    SDL_SetRenderTarget(c->renderer, c->gstates[c->gstates_ptr].target->tex);
+    SDL_SetRenderTarget(c->renderer, c->curstate->target->tex);
   }
 
   // writing to file

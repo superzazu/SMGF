@@ -101,6 +101,7 @@ typedef struct smgf {
 
   smgf_graphic_state* gstates;
   int gstates_ptr;
+  smgf_graphic_state* curstate;
 
   float dt; // last dt
   Uint8 const* keyboard_state;

@@ -593,9 +593,9 @@ static int l_set_target(lua_State* L) {
   smgf* const c = get_smgf(L);
 
   // unref'ing the current target if ref'ed
-  if (c->gstates[c->gstates_ptr].target_luaref != 0) {
-    luaL_unref(L, LUA_REGISTRYINDEX, c->gstates[c->gstates_ptr].target_luaref);
-    c->gstates[c->gstates_ptr].target_luaref = 0;
+  if (c->curstate->target_luaref != 0) {
+    luaL_unref(L, LUA_REGISTRYINDEX, c->curstate->target_luaref);
+    c->curstate->target_luaref = 0;
   }
 
   stexture* t = (stexture*) luaL_testudata(L, 1, SMGF_TYPE_TEXTURE);
@@ -604,7 +604,7 @@ static int l_set_target(lua_State* L) {
     if (t != NULL) {
       // we keep a reference to this texture so that we can return it when
       // user calls "get_target"
-      c->gstates[c->gstates_ptr].target_luaref = luaL_ref(L, LUA_REGISTRYINDEX);
+      c->curstate->target_luaref = luaL_ref(L, LUA_REGISTRYINDEX);
     }
   } else {
     return luaL_error(L, "cannot set target (%s)", SDL_GetError());
@@ -616,8 +616,8 @@ static int l_set_target(lua_State* L) {
 static int l_get_target(lua_State* L) {
   smgf* const c = get_smgf(L);
 
-  if (c->gstates[c->gstates_ptr].target_luaref != 0) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, c->gstates[c->gstates_ptr].target_luaref);
+  if (c->curstate->target_luaref != 0) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, c->curstate->target_luaref);
   } else {
     lua_pushnil(L);
   }
