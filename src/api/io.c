@@ -14,16 +14,16 @@ int sf_io_del(sfile* const f) {
 
 int sf_io_open(sfile* const f, const char* filename, char mode) {
   switch (mode) {
-  case 'r': f->file = PHYSFSRWOPS_openRead(filename); break;
-  case 'w': f->file = PHYSFSRWOPS_openWrite(filename); break;
-  case 'a': f->file = PHYSFSRWOPS_openAppend(filename); break;
+  case 'r': f->file = PHYSFSSDL3_openRead(filename); break;
+  case 'w': f->file = PHYSFSSDL3_openWrite(filename); break;
+  case 'a': f->file = PHYSFSSDL3_openAppend(filename); break;
   default: SDL_SetError("unknown open mode '%c'", mode); return 2;
   }
 
   f->mode = mode;
 
   if (f->file == NULL) {
-    // PHYSFSRWOPS_open* already sets error message
+    // PHYSFSSDL3_open* already sets error message
     return 1;
   }
 
@@ -40,12 +40,11 @@ int sf_io_close(sfile* const f) {
     return 0;
   }
 
-  int r = SDL_RWclose(f->file);
-  if (r != 0) {
+  if (!SDL_CloseIO(f->file)) {
     SDL_SetError(
         "unable to close file (%s)",
         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    return r;
+    return -1;
   }
 
   f->file = NULL;
@@ -54,29 +53,35 @@ int sf_io_close(sfile* const f) {
 }
 
 Sint64 sf_io_seek(sfile* const f, Sint64 offset, int whence) {
-  return SDL_RWseek(f->file, offset, whence);
+  return SDL_SeekIO(f->file, offset, whence);
 }
 
 Sint64 sf_io_tell(sfile* const f) {
-  return SDL_RWtell(f->file);
+  return SDL_TellIO(f->file);
 }
 
 Sint64 sf_io_rewind(sfile* const f) {
-  return SDL_RWseek(f->file, 0, RW_SEEK_SET);
+  return SDL_SeekIO(f->file, 0, SDL_IO_SEEK_SET);
 }
 
 Sint64 sf_io_size(sfile* const f) {
-  return SDL_RWsize(f->file);
+  return SDL_GetIOSize(f->file);
 }
 
 // returns nb of objects read
-int sf_io_read(sfile* const f, void* ptr, size_t size, size_t maxnum) {
-  return SDL_RWread(f->file, ptr, size, maxnum);
+int sf_io_read(sfile* const f, void* ptr, size_t size) {
+  if (size > 0) {
+    return SDL_ReadIO(f->file, ptr, size);
+  }
+  return 0;
 }
 
 // returns nb of objects written
-int sf_io_write(sfile* const f, const void* ptr, size_t size, size_t num) {
-  return SDL_RWwrite(f->file, ptr, size, num);
+int sf_io_write(sfile* const f, const void* ptr, size_t size) {
+  if (size > 0) {
+    return SDL_WriteIO(f->file, ptr, size);
+  }
+  return 0;
 }
 
 // get the position of the next occurence of character "c". If not found,
@@ -86,12 +91,12 @@ int sf_io_strchr(sfile* const f, Sint64* pos, char needle) {
 
   char c = 0;
   while (c != needle) {
-    if (sf_io_read(f, &c, 1, 1) <= 0) {
+    if (sf_io_read(f, &c, 1) <= 0) {
       break; // eof of file or read error
     }
   }
   *pos = sf_io_tell(f);
-  sf_io_seek(f, cur_pos, RW_SEEK_SET);
+  sf_io_seek(f, cur_pos, SDL_IO_SEEK_SET);
 
   return 0;
 }
@@ -117,8 +122,6 @@ bool sf_io_exists(const char* filename) {
   return PHYSFS_exists(filename) != 0;
 }
 
-int sf_io_flush(sfile* const f) {
-  // @WARN: use of private API
-  PHYSFS_File* handle = (PHYSFS_File*) f->file->hidden.unknown.data1;
-  return PHYSFS_flush(handle) == 0;
+bool sf_io_flush(sfile* const f) {
+  return SDL_FlushIO(f->file);
 }

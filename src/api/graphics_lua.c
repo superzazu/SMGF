@@ -52,7 +52,7 @@ static int l_clear(lua_State* L) {
   SDL_Color color = {.r = 0, .g = 0, .b = 0, .a = 255};
   lua_get_color(L, 1, &color);
 
-  if (sf_gr_clear(c, &color)) {
+  if (!sf_gr_clear(c, &color)) {
     return luaL_error(L, "cannot clear (%s)", SDL_GetError());
   }
   return 0;
@@ -64,7 +64,7 @@ static int l_set_color(lua_State* L) {
   // if no arg, set color to opaque white
   if (lua_gettop(L) == 0) {
     SDL_Color color = {.r = 255, .g = 255, .b = 255, .a = 255};
-    if (sf_gr_set_color(c, &color)) {
+    if (!sf_gr_set_color(c, &color)) {
       return luaL_error(L, "cannot set color (%s)", SDL_GetError());
     }
     return 0;
@@ -73,7 +73,7 @@ static int l_set_color(lua_State* L) {
   SDL_Color color = {.r = 0, .g = 0, .b = 0, .a = 255};
   lua_get_color(L, 1, &color);
 
-  if (sf_gr_set_color(c, &color)) {
+  if (!sf_gr_set_color(c, &color)) {
     return luaL_error(L, "cannot set color (%s)", SDL_GetError());
   }
   return 0;
@@ -82,7 +82,7 @@ static int l_set_color(lua_State* L) {
 static int l_get_color(lua_State* L) {
   smgf* const c = get_smgf(L);
   SDL_Color color = {0};
-  if (sf_gr_get_color(c, &color) != 0) {
+  if (!sf_gr_get_color(c, &color)) {
     return luaL_error(L, "cannot get color (%s)", SDL_GetError());
   }
   lua_pushnumber(L, color.r);
@@ -96,7 +96,7 @@ static int l_get_blend_mode(lua_State* L) {
   smgf* const c = get_smgf(L);
 
   SDL_BlendMode b;
-  if (sf_gr_get_blend_mode(c, &b)) {
+  if (!sf_gr_get_blend_mode(c, &b)) {
     return luaL_error(L, "cannot get blend mode (%s)", SDL_GetError());
   }
 
@@ -123,7 +123,7 @@ static int l_set_blend_mode(lua_State* L) {
                                             "mod",  "mul",   NULL};
   int op = luaL_checkoption(L, 1, "blend", blend_names);
 
-  if (sf_gr_set_blend_mode(c, blend[op])) {
+  if (!sf_gr_set_blend_mode(c, blend[op])) {
     return luaL_error(L, "cannot set blend mode (%s)", SDL_GetError());
   }
 
@@ -153,7 +153,7 @@ static int l_draw_point(lua_State* L) {
   float x = luaL_checknumber(L, 1);
   float y = luaL_checknumber(L, 2);
 
-  if (sf_gr_draw_point(c, x, y)) {
+  if (!sf_gr_draw_point(c, x, y)) {
     return luaL_error(L, "cannot draw point (%s)", SDL_GetError());
   }
 
@@ -168,7 +168,7 @@ static int l_draw_line(lua_State* L) {
   float x2 = luaL_checknumber(L, 3);
   float y2 = luaL_checknumber(L, 4);
 
-  if (sf_gr_draw_line(c, x1, y1, x2, y2)) {
+  if (!sf_gr_draw_line(c, x1, y1, x2, y2)) {
     return luaL_error(L, "cannot draw line (%s)", SDL_GetError());
   }
 
@@ -183,7 +183,7 @@ static int l_draw_rect(lua_State* L) {
   float w = luaL_checknumber(L, 3);
   float h = luaL_checknumber(L, 4);
 
-  if (sf_gr_draw_rect(c, x, y, w, h)) {
+  if (!sf_gr_draw_rect(c, x, y, w, h)) {
     return luaL_error(L, "cannot draw rect (%s)", SDL_GetError());
   }
 
@@ -198,7 +198,7 @@ static int l_draw_rectfill(lua_State* L) {
   float w = luaL_checknumber(L, 3);
   float h = luaL_checknumber(L, 4);
 
-  if (sf_gr_draw_rectfill(c, x, y, w, h)) {
+  if (!sf_gr_draw_rectfill(c, x, y, w, h)) {
     return luaL_error(L, "cannot draw rectfill (%s)", SDL_GetError());
   }
 
@@ -449,7 +449,7 @@ static int l_texture_set_blend_mode(lua_State* L) {
                                             "mod",  "mul",   NULL};
   int op = luaL_checkoption(L, 2, "blend", blend_names);
 
-  if (sf_gr_texture_set_blend_mode(t, blend[op])) {
+  if (!sf_gr_texture_set_blend_mode(t, blend[op])) {
     return luaL_error(L, "cannot set blend mode (%s)", SDL_GetError());
   }
 
@@ -460,7 +460,7 @@ static int l_texture_get_blend_mode(lua_State* L) {
   smgf* const c = get_smgf(L);
   stexture* t = (stexture*) luaL_checkudata(L, 1, SMGF_TYPE_TEXTURE);
   SDL_BlendMode b;
-  if (sf_gr_texture_get_blend_mode(t, &b)) {
+  if (!sf_gr_texture_get_blend_mode(t, &b)) {
     return luaL_error(L, "cannot get blend mode (%s)", SDL_GetError());
   }
 
@@ -582,7 +582,8 @@ static int l_texture_draw(lua_State* L) {
     flip = flips[op];
   }
 
-  if (sf_gr_texture_draw(c, t, x, y, qx, qy, qw, qh, sx, sy, r, ox, oy, flip)) {
+  if (!sf_gr_texture_draw(
+          c, t, x, y, qx, qy, qw, qh, sx, sy, r, ox, oy, flip)) {
     return luaL_error(c->L, "cannot draw texture (%s)", SDL_GetError());
   }
 
@@ -600,7 +601,7 @@ static int l_set_target(lua_State* L) {
 
   stexture* t = (stexture*) luaL_testudata(L, 1, SMGF_TYPE_TEXTURE);
 
-  if (sf_gr_set_target(c, t) == 0) {
+  if (sf_gr_set_target(c, t)) {
     if (t != NULL) {
       // we keep a reference to this texture so that we can return it when
       // user calls "get_target"

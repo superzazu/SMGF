@@ -100,8 +100,7 @@ function smgf.init()
   music = smgf.audio.new("music.ogg", false)
 
   music:set_gain(0.5) -- between 0 (silence) and 2 (200%)
-  music:set_loop(true)
-  music:play()
+  music:play(true)
 end
 
 function smgf.key_down(key)

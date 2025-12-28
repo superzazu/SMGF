@@ -7,14 +7,15 @@
 #include <string.h>
 #include <time.h>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
 
 #include <physfs.h>
-#include "SDL_nmix_file.h"
 #include "SDL_DBGP.h"
 
 #ifndef SMGF_VERSION
@@ -56,12 +57,14 @@ typedef struct stexture {
 
 typedef struct ssound {
   const char* filename;
-  SDL_RWops* rw;
-  NMIX_FileSource* snd;
+  bool predecoded;
+  SDL_IOStream* rw;
+  MIX_Audio* snd;
+  MIX_Track* track;
 } ssound;
 
 typedef struct sfile {
-  SDL_RWops* file;
+  SDL_IOStream* file;
   PHYSFS_Stat stat;
   char mode;
 } sfile;
@@ -88,6 +91,7 @@ typedef struct smgf {
   lua_State* L;
   SDL_Window* window;
   SDL_Renderer* renderer;
+  MIX_Mixer* mixer;
   stexture* screen_texture;
   int width, height;
   int fps;
@@ -104,7 +108,7 @@ typedef struct smgf {
   smgf_graphic_state* curstate;
 
   float dt; // last dt
-  Uint8 const* keyboard_state;
+  bool const* keyboard_state;
   SDL_JoystickID controllers[4];
   DBGP_Font font;
 } smgf;
@@ -126,8 +130,8 @@ int smgf_linit(smgf* const c);
 int smgf_lupdate(smgf* const c);
 int smgf_ldraw(smgf* const c);
 int smgf_lfocus(smgf* const c, bool is_focused);
-int smgf_lkey_down(smgf* const c, SDL_Keysym* key);
-int smgf_lkey_up(smgf* const c, SDL_Keysym* key);
+int smgf_lkey_down(smgf* const c, SDL_KeyboardEvent* ev);
+int smgf_lkey_up(smgf* const c, SDL_KeyboardEvent* ev);
 int smgf_ltext_input(smgf* const c, const char* text);
 int smgf_lmouse_down(smgf* const c, int x, int y, int button);
 int smgf_lmouse_up(smgf* const c, int x, int y, int button);
@@ -136,9 +140,9 @@ int smgf_lmouse_wheel(smgf* const c, int x, int y, int direction);
 int smgf_lgamepad_added(smgf* const c, int joystick_index);
 int smgf_lgamepad_removed(smgf* const c, SDL_JoystickID id);
 int smgf_lgamepad_down(
-    smgf* const c, SDL_JoystickID id, SDL_GameControllerButton button);
+    smgf* const c, SDL_JoystickID id, SDL_GamepadButton button);
 int smgf_lgamepad_up(
-    smgf* const c, SDL_JoystickID id, SDL_GameControllerButton button);
+    smgf* const c, SDL_JoystickID id, SDL_GamepadButton button);
 int smgf_lgamepad_axismotion(
     smgf* const c, SDL_JoystickID id, Uint8 axis, Sint16 value);
 int smgf_lrender_targets_reset(smgf* const c);

@@ -12,7 +12,7 @@ Features:
 
 - minimal Lua (5.4) API, with exports for the web, macOS, Linux and Windows
 - LSP annotations available for the whole API
-- a simple hardware-accelerated 2D API powered by the SDL2
+- a simple hardware-accelerated 2D API powered by the SDL3
 - streamed and static audio sources from multiple sound formats (ogg and wav by default, others formats such as mp3, flac, and tracker formats can be configured on build)
 - inputs from mouse, keyboard and game controllers
 - sandboxed IO environment to save/load data on the player computer, which
@@ -93,8 +93,8 @@ freely, subject to the following restrictions:
 
 Internally, SMGF uses the following libraries:
 
-- [SDL2](https://www.libsdl.org/)
+- [SDL3](https://www.libsdl.org/)
+- [SDL3_image](https://www.libsdl.org/)
+- [SDL3_mixer](https://www.libsdl.org/)
 - [Lua](http://www.lua.org)
 - [physfs](https://www.icculus.org/physfs/)
-- [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h) and [SDL_stbimage.h](https://github.com/DanielGibson/Snippets/blob/master/SDL_stbimage.h)
-- [SDL_nmix](https://github.com/superzazu/SDL_nmix) and [SDL_sound](https://icculus.org/SDL_sound/)

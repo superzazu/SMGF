@@ -203,6 +203,19 @@ static int load_config(smgf* c, const char* conf_file_name) {
 int smgf_init(smgf* const c, const char* game_folder) {
   c->should_quit = false;
 
+  SDL_AudioSpec spec = {
+      .format = SDL_AUDIO_F32,
+      .channels = 2,
+      .freq = 44100,
+  };
+  MIX_Mixer* mixer =
+      MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
+  if (mixer == NULL) {
+    smgf_set_error(c, "Unable to create mixer device: %s", SDL_GetError());
+    return 1;
+  }
+  c->mixer = mixer;
+
   // mount the game folder in physfs
   if (PHYSFS_mount(game_folder, "/", 1) == 0) {
     int error_code = PHYSFS_getLastErrorCode();
@@ -238,9 +251,8 @@ int smgf_init(smgf* const c, const char* game_folder) {
 
   // setting up SDL window
   c->window = SDL_CreateWindow(
-      c->conf.window_title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      c->width * c->zoom, c->height * c->zoom,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+      c->conf.window_title, c->width * c->zoom, c->height * c->zoom,
+      SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   if (c->window == NULL) {
     SDL_Log("unable to create window: %s", SDL_GetError());
     return 1;
@@ -248,19 +260,20 @@ int smgf_init(smgf* const c, const char* game_folder) {
   SDL_SetWindowMinimumSize(c->window, c->width, c->height);
 
   // create SDL renderer
-  c->renderer = SDL_CreateRenderer(
-      c->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  c->renderer = SDL_CreateRenderer(c->window, NULL);
   if (c->renderer == NULL) {
     SDL_Log("unable to create renderer: %s", SDL_GetError());
     return 1;
   }
-  SDL_RenderSetLogicalSize(c->renderer, c->width, c->height);
-  // SDL_RenderSetIntegerScale(renderer, SDL_TRUE);
-  // SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderVSync(c->renderer, true);
 
-  if (DBGP_OpenFont(
+  SDL_SetRenderLogicalPresentation(
+      c->renderer, c->width, c->height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+  SDL_SetRenderDrawBlendMode(c->renderer, SDL_BLENDMODE_BLEND);
+
+  if (!DBGP_CreateFont(
           &c->font, c->renderer, DBGP_UNSCII16, sizeof(DBGP_UNSCII16),
-          DBGP_UNSCII16_WIDTH, DBGP_UNSCII16_HEIGHT) != 0) {
+          DBGP_UNSCII16_HEIGHT)) {
     SDL_Log("Unable to initialise DBGP: %s", SDL_GetError());
     return 1;
   }
@@ -304,7 +317,7 @@ int smgf_init(smgf* const c, const char* game_folder) {
 
   c->dt = 0;
   c->keyboard_state = SDL_GetKeyboardState(NULL);
-  sf_kb_set_textinput(false);
+  sf_kb_set_textinput(c, false);
   sf_sy_set_cursor_visible(c, c->conf.cursor_visible);
   c->focused = true;
 
@@ -315,13 +328,17 @@ int smgf_quit(smgf* const c) {
   if (c->L) {
     lua_close(c->L);
   }
-  sf_gr_texture_del(c->screen_texture);
+  if (c->screen_texture != NULL) {
+    sf_gr_texture_del(c->screen_texture);
+  }
   if (c->screen_texture != NULL) {
     SDL_free(c->screen_texture);
   }
   c->curstate = NULL;
-  SDL_free(c->gstates);
-  DBGP_CloseFont(&c->font);
+  if (c->gstates != NULL) {
+    SDL_free(c->gstates);
+  }
+  DBGP_DestroyFont(&c->font);
   sf_sy_set_identity(c, NULL, NULL);
   if (c->conf.application) {
     SDL_free(c->conf.application);
@@ -334,6 +351,9 @@ int smgf_quit(smgf* const c) {
   }
   if (c->window != NULL) {
     SDL_DestroyWindow(c->window);
+  }
+  if (c->mixer != NULL) {
+    MIX_DestroyMixer(c->mixer);
   }
   return 0;
 }
@@ -360,8 +380,8 @@ int smgf_set_error(smgf* const c, const char* fmt, ...) {
       SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, fmt, args);
 
   // note: we need to make a copy of "args" to avoid segfault
-  char error_message[SDL_MAX_LOG_MESSAGE];
-  SDL_vsnprintf(error_message, SDL_MAX_LOG_MESSAGE, fmt, args_copy);
+  char error_message[4096];
+  SDL_vsnprintf(error_message, 4096, fmt, args_copy);
   SDL_ShowSimpleMessageBox(
       SDL_MESSAGEBOX_ERROR, "SMGF error", error_message, window);
 
@@ -397,73 +417,10 @@ int lua_getsmgffunc(smgf* const c, const char* fname) {
   return 0;
 }
 
-/// @see scripts/get_keyboard_array.ts
-// clang-format off
-static const char* smgf_key_names[] = {
-  NULL, NULL, NULL, NULL, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
-  "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
-  "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "return", "escape",
-  "backspace", "tab", "space", "-", "=", "[", "]", "\\", "#", ";", "'", "`",
-  ",", ".", "/", "capslock", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8",
-  "f9", "f10", "f11", "f12", "printscreen", "scrolllock", "pause", "insert",
-  "home", "pageup", "delete", "end", "pagedown", "right", "left", "down",
-  "up", "numlock", "keypad /", "keypad *", "keypad -", "keypad +",
-  "keypad enter", "keypad 1", "keypad 2", "keypad 3", "keypad 4", "keypad 5",
-  "keypad 6", "keypad 7", "keypad 8", "keypad 9", "keypad 0", "keypad .",
-  NULL, "application", "power", "keypad =", "f13", "f14", "f15", "f16",
-  "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "execute", "help",
-  "menu", "select", "stop", "again", "undo", "cut", "copy", "paste", "find",
-  "mute", "volumeup", "volumedown", NULL, NULL, NULL, "keypad ,",
-  "keypad = (as400)", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "alterase",
-  "sysreq", "cancel", "clear", "prior", "return", "separator", "out",
-  "oper", "clear / again", "crsel", "exsel", NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL, "keypad 00", "keypad 000",
-  "thousandsseparator", "decimalseparator", "currencyunit",
-  "currencysubunit", "keypad (", "keypad )", "keypad {", "keypad }",
-  "keypad tab", "keypad backspace", "keypad a", "keypad b", "keypad c",
-  "keypad d", "keypad e", "keypad f", "keypad xor", "keypad ^", "keypad %",
-  "keypad <", "keypad >", "keypad &", "keypad &&", "keypad |", "keypad ||",
-  "keypad :", "keypad #", "keypad space", "keypad @", "keypad !",
-  "keypad memstore", "keypad memrecall", "keypad memclear", "keypad memadd",
-  "keypad memsubtract", "keypad memmultiply", "keypad memdivide",
-  "keypad +/-", "keypad clear", "keypad clearentry", "keypad binary",
-  "keypad octal", "keypad decimal", "keypad hexadecimal", NULL, NULL,
-  "left ctrl", "left shift", "left alt", "left gui", "right ctrl",
-  "right shift", "right alt", "right gui", NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "modeswitch", "audionext",
-  "audioprev", "audiostop", "audioplay", "audiomute", "mediaselect", "www",
-  "mail", "calculator", "computer", "ac search", "ac home", "ac back",
-  "ac forward", "ac stop", "ac refresh", "ac bookmarks", "brightnessdown",
-  "brightnessup", "displayswitch", "kbdillumtoggle", "kbdillumdown",
-  "kbdillumup", "eject", "sleep", "app1", "app2", "audiorewind",
-  "audiofastforward", "softleft", "softright", "call", "endcall"
-};
-// clang-format on
-
 SDL_Scancode smgf_get_scancode_from_name(const char* name) {
-  if (!name || !*name) {
-    return SDL_SCANCODE_UNKNOWN;
-  }
-
-  for (size_t i = 0; i < SDL_arraysize(smgf_key_names); ++i) {
-    if (!smgf_key_names[i]) {
-      continue;
-    }
-    if (SDL_strcasecmp(name, smgf_key_names[i]) == 0) {
-      return (SDL_Scancode) i;
-    }
-  }
-
-  return SDL_SCANCODE_UNKNOWN;
+  return SDL_GetScancodeFromName(name);
 }
 
 const char* smgf_get_name_from_scancode(SDL_Scancode scancode) {
-  if (scancode == SDL_SCANCODE_UNKNOWN ||
-      scancode >= SDL_arraysize(smgf_key_names)) {
-    return NULL;
-  }
-
-  return smgf_key_names[scancode];
+  return SDL_GetScancodeName(scancode);
 }

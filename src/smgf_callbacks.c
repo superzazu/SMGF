@@ -10,27 +10,27 @@ static inline void l_pushkeymodtable(lua_State* L, SDL_Keymod mod) {
   lua_newtable(L);
 
   int i = 0;
-  if (mod & KMOD_LSHIFT)
+  if (mod & SDL_KMOD_LSHIFT)
     l_pushtotable(L, ++i, "lshift");
-  if (mod & KMOD_RSHIFT)
+  if (mod & SDL_KMOD_RSHIFT)
     l_pushtotable(L, ++i, "rshift");
-  if (mod & KMOD_LCTRL)
+  if (mod & SDL_KMOD_LCTRL)
     l_pushtotable(L, ++i, "lctrl");
-  if (mod & KMOD_RCTRL)
+  if (mod & SDL_KMOD_RCTRL)
     l_pushtotable(L, ++i, "rctrl");
-  if (mod & KMOD_LALT)
+  if (mod & SDL_KMOD_LALT)
     l_pushtotable(L, ++i, "lalt");
-  if (mod & KMOD_RALT)
+  if (mod & SDL_KMOD_RALT)
     l_pushtotable(L, ++i, "ralt");
-  if (mod & KMOD_LGUI)
+  if (mod & SDL_KMOD_LGUI)
     l_pushtotable(L, ++i, "lgui");
-  if (mod & KMOD_RGUI)
+  if (mod & SDL_KMOD_RGUI)
     l_pushtotable(L, ++i, "rgui");
-  if (mod & KMOD_NUM)
+  if (mod & SDL_KMOD_NUM)
     l_pushtotable(L, ++i, "num");
-  if (mod & KMOD_CAPS)
+  if (mod & SDL_KMOD_CAPS)
     l_pushtotable(L, ++i, "caps");
-  if (mod & KMOD_MODE)
+  if (mod & SDL_KMOD_MODE)
     l_pushtotable(L, ++i, "mode");
 }
 
@@ -78,8 +78,8 @@ int smgf_lfocus(smgf* const c, bool is_focused) {
   return 0;
 }
 
-int smgf_lkey_down(smgf* const c, SDL_Keysym* keysym) {
-  const char* key_name = smgf_get_name_from_scancode(keysym->scancode);
+int smgf_lkey_down(smgf* const c, SDL_KeyboardEvent* ev) {
+  const char* key_name = smgf_get_name_from_scancode(ev->scancode);
   if (key_name == NULL) {
     return 1;
   }
@@ -89,15 +89,15 @@ int smgf_lkey_down(smgf* const c, SDL_Keysym* keysym) {
   }
 
   lua_pushstring(c->L, key_name);
-  l_pushkeymodtable(c->L, keysym->mod);
+  l_pushkeymodtable(c->L, ev->mod);
 
   smgf_pcall(c->L, 2, 0);
 
   return 0;
 }
 
-int smgf_lkey_up(smgf* const c, SDL_Keysym* keysym) {
-  const char* key_name = smgf_get_name_from_scancode(keysym->scancode);
+int smgf_lkey_up(smgf* const c, SDL_KeyboardEvent* ev) {
+  const char* key_name = smgf_get_name_from_scancode(ev->scancode);
   if (key_name == NULL) {
     return 1;
   }
@@ -107,7 +107,7 @@ int smgf_lkey_up(smgf* const c, SDL_Keysym* keysym) {
   }
 
   lua_pushstring(c->L, key_name);
-  l_pushkeymodtable(c->L, keysym->mod);
+  l_pushkeymodtable(c->L, ev->mod);
 
   smgf_pcall(c->L, 2, 0);
 
@@ -206,31 +206,37 @@ int smgf_lgamepad_added(smgf* const c, int joystick_index) {
   // the "which" attribute corresponds to the "joystick device index",
   // and *not* the "instance id" like for "SDL_CONTROLLERDEVICEREMOVED"
   // and "SDL_CONTROLLERDEVICEREMAPPED"
-  SDL_GameController* pad = SDL_GameControllerOpen(joystick_index);
+  SDL_Gamepad* pad = SDL_OpenGamepad(joystick_index);
   if (pad == NULL) {
     return 1;
   }
 
-  int player_index = SDL_GameControllerGetPlayerIndex(pad);
+  int player_index = SDL_GetGamepadPlayerIndex(pad);
 
   if (player_index == -1) {
     SDL_Log("Unable to open game controller: could not retrieve player index");
     return 1;
   }
 
+  SDL_PropertiesID props = SDL_GetGamepadProperties(pad);
+
   SDL_Log(
       "Opened gamepad %d (%s), RUMBLE: %s, LED: %s, ACCEL: %s, GYRO: %s, "
       "TOUCHPADS: %i",
-      player_index, SDL_GameControllerName(pad),
-      SDL_GameControllerHasRumble(pad) ? "YES" : "NO",
-      SDL_GameControllerHasLED(pad) ? "YES" : "NO",
-      SDL_GameControllerHasSensor(pad, SDL_SENSOR_ACCEL) ? "YES" : "NO",
-      SDL_GameControllerHasSensor(pad, SDL_SENSOR_GYRO) ? "YES" : "NO",
-      SDL_GameControllerGetNumTouchpads(pad));
+      player_index, SDL_GetGamepadName(pad),
+      SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false)
+          ? "YES"
+          : "NO",
+      SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false)
+          ? "YES"
+          : "NO",
+      SDL_GamepadHasSensor(pad, SDL_SENSOR_ACCEL) ? "YES" : "NO",
+      SDL_GamepadHasSensor(pad, SDL_SENSOR_GYRO) ? "YES" : "NO",
+      SDL_GetNumGamepadTouchpads(pad));
 
   // we need to store instance ids for when the controller is removed
-  SDL_Joystick* joy = SDL_GameControllerGetJoystick(pad);
-  c->controllers[player_index] = SDL_JoystickInstanceID(joy);
+  SDL_Joystick* joy = SDL_GetGamepadJoystick(pad);
+  c->controllers[player_index] = SDL_GetJoystickID(joy);
 
   if (lua_getsmgffunc(c, "gamepad_added") != 0) {
     return 1;
@@ -242,7 +248,7 @@ int smgf_lgamepad_added(smgf* const c, int joystick_index) {
 }
 
 int smgf_lgamepad_removed(smgf* const c, SDL_JoystickID id) {
-  SDL_GameController* pad = SDL_GameControllerFromInstanceID(id);
+  SDL_Gamepad* pad = SDL_GetGamepadFromID(id);
   if (pad == NULL) {
     return 1;
   }
@@ -260,8 +266,8 @@ int smgf_lgamepad_removed(smgf* const c, SDL_JoystickID id) {
     }
   }
 
-  SDL_Log("Closed gamepad %d (%s)", player_index, SDL_GameControllerName(pad));
-  SDL_GameControllerClose(pad);
+  SDL_Log("Closed gamepad %d (%s)", player_index, SDL_GetGamepadName(pad));
+  SDL_CloseGamepad(pad);
 
   if (lua_getsmgffunc(c, "gamepad_removed") != 0) {
     return 1;
@@ -274,18 +280,18 @@ int smgf_lgamepad_removed(smgf* const c, SDL_JoystickID id) {
 }
 
 int smgf_lgamepad_down(
-    smgf* const c, SDL_JoystickID id, SDL_GameControllerButton button) {
-  SDL_GameController* pad = SDL_GameControllerFromInstanceID(id);
+    smgf* const c, SDL_JoystickID id, SDL_GamepadButton button) {
+  SDL_Gamepad* pad = SDL_GetGamepadFromID(id);
   if (pad == NULL) {
     return 1;
   }
 
-  int player_index = SDL_GameControllerGetPlayerIndex(pad);
+  int player_index = SDL_GetGamepadPlayerIndex(pad);
   if (player_index == -1) {
     return 1;
   }
 
-  const char* button_str = SDL_GameControllerGetStringForButton(button);
+  const char* button_str = SDL_GetGamepadStringForButton(button);
   if (button_str == NULL) {
     return 1;
   }
@@ -301,18 +307,18 @@ int smgf_lgamepad_down(
 }
 
 int smgf_lgamepad_up(
-    smgf* const c, SDL_JoystickID id, SDL_GameControllerButton button) {
-  SDL_GameController* pad = SDL_GameControllerFromInstanceID(id);
+    smgf* const c, SDL_JoystickID id, SDL_GamepadButton button) {
+  SDL_Gamepad* pad = SDL_GetGamepadFromID(id);
   if (pad == NULL) {
     return 1;
   }
 
-  int player_index = SDL_GameControllerGetPlayerIndex(pad);
+  int player_index = SDL_GetGamepadPlayerIndex(pad);
   if (player_index == -1) {
     return 1;
   }
 
-  const char* button_str = SDL_GameControllerGetStringForButton(button);
+  const char* button_str = SDL_GetGamepadStringForButton(button);
   if (button_str == NULL) {
     return 1;
   }
@@ -329,17 +335,17 @@ int smgf_lgamepad_up(
 
 int smgf_lgamepad_axismotion(
     smgf* const c, SDL_JoystickID id, Uint8 axis, Sint16 value) {
-  SDL_GameController* pad = SDL_GameControllerFromInstanceID(id);
+  SDL_Gamepad* pad = SDL_GetGamepadFromID(id);
   if (pad == NULL) {
     return 1;
   }
 
-  int player_index = SDL_GameControllerGetPlayerIndex(pad);
+  int player_index = SDL_GetGamepadPlayerIndex(pad);
   if (player_index == -1) {
     return 1;
   }
 
-  const char* axis_str = SDL_GameControllerGetStringForAxis(axis);
+  const char* axis_str = SDL_GetGamepadStringForAxis(axis);
   if (axis_str == NULL) {
     return 1;
   }

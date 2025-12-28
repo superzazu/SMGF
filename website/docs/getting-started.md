@@ -11,7 +11,7 @@ Download compiled binaries from GitHub [here](https://github.com/superzazu/SMGF/
 
 :::note
 
-You can also [build from source](./getting-started.md#building-smgf-yourself) if your platform is not available or if you want to customise build options. SMGF should be compatible with every platform that SDL2 supports.
+You can also [build from source](./getting-started.md#building-smgf-yourself) if your platform is not available or if you want to customise build options. SMGF should be compatible with every platform that SDL3 supports.
 
 :::
 
@@ -99,7 +99,7 @@ Run the following command to run SMGF in your browser:
 emrun smgf.html
 ```
 
-To run your game instead of the default one, you need to package your game files differently than other platforms:
+To run your game instead of the default one, you need to package your game files a bit differently:
 
 ```sh
 python3 $EMSDK_PATH/upstream/emscripten/tools/file_packager.py game.data --preload $PATH_TO_MY_GAME_FOLDER@/game
@@ -110,11 +110,6 @@ This will create a `game.data` file that you can use with SMGF.
 ## building SMGF yourself
 
 If you want to customise build options or if there is no official release for your platform, you need to build SMGF yourself. SMGF can be compiled on macOS, Linux and Windows.
-It requires the SDL2 to be installed on your machine:
-
-- macOS: `brew install sdl2`
-- debian/Ubuntu: `apt install libsdl2-dev libreadline-dev`
-- Windows: `vcpkg install sdl2`
 
 CMake is used to build the project. You can build SMGF for your platform
 with those commands:
@@ -152,6 +147,13 @@ You can then upload the smgf.html/js/wasm/data files on a web server.
 
 ### cross-compiling to Windows
 
+:::warning
+
+This part about cross-compiling to Windows was not updated for SDL3.
+You can use pre-compiled Windows binaries from GitHub instead.
+
+:::
+
 To cross-compile to Windows from macOS or Linux, you have to install MinGW and the [SDL2 MinGW development libraries](https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-devel-2.26.1-mingw.tar.gz).
 
 On a Mac, you can install MinGW with Homebrew `brew install mingw-w64` and the SDL development librairies using `make install-package arch=x86_64-w64-mingw32 prefix=$(brew --prefix mingw-w64)/toolchain-x86_64/x86_64-w64-mingw32`.
@@ -169,9 +171,12 @@ DLL files are automatically copied to the folder where smgf.exe is.
 ## LSP annotations
 
 Annotations for [lua-language-server](https://github.com/LuaLS/lua-language-server) (Lua LSP server) are available for the whole SMGF API. These should be compatible with every editor that supports LSP.
+Here is what your `.luarc.json` file should look like:
 
-### Visual Studio Code
-
-In [Visual Studio Code](https://code.visualstudio.com), install [sumneko.lua](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) extension.
-
-In your user settings, add `$PATH_TO_SMGF/docs-api` to `Lua.workspace.library` , so that the LSP can find SMGF annotations automatically.
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "Lua 5.4",
+  "workspace.library": ["/<path-to-SMGF>/docs-api"]
+}
+```

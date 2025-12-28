@@ -130,14 +130,14 @@ tests.graphics:test("set color accepts tables", function()
 end)
 
 tests.graphics:test("set color accepts tables with no alpha component",
-    function()
-      smgf.graphics.set_color({1, 2, 3})
-      local r, g, b, a = smgf.graphics.get_color()
-      assert_equal(r, 1)
-      assert_equal(g, 2)
-      assert_equal(b, 3)
-      assert_equal(a, 255) -- defaults to 255
-    end)
+  function()
+    smgf.graphics.set_color({1, 2, 3})
+    local r, g, b, a = smgf.graphics.get_color()
+    assert_equal(r, 1)
+    assert_equal(g, 2)
+    assert_equal(b, 3)
+    assert_equal(a, 255) -- defaults to 255
+  end)
 
 tests.graphics:test("set color with table and wrong nb of arguments", function()
   assert_raises(function()
@@ -149,16 +149,16 @@ tests.graphics:test("set color with table and wrong nb of arguments", function()
 end)
 
 tests.graphics:test("set color with no arguments set color to opaque white",
-    function()
-      smgf.graphics.set_color(140, 140, 140, 140)
-      smgf.graphics.set_color()
+  function()
+    smgf.graphics.set_color(140, 140, 140, 140)
+    smgf.graphics.set_color()
 
-      local r, g, b, a = smgf.graphics.get_color()
-      assert_equal(r, 255)
-      assert_equal(g, 255)
-      assert_equal(b, 255)
-      assert_equal(a, 255)
-    end)
+    local r, g, b, a = smgf.graphics.get_color()
+    assert_equal(r, 255)
+    assert_equal(g, 255)
+    assert_equal(b, 255)
+    assert_equal(a, 255)
+  end)
 
 tests.graphics:test("can clear screen", function()
   smgf.graphics.clear()
@@ -251,11 +251,11 @@ tests.graphics:test("set blend mode expects string", function()
 end)
 
 tests.graphics:test("set_blend_mode with no parameters defaults to blend",
-    function()
-      smgf.graphics.set_blend_mode("none")
-      smgf.graphics.set_blend_mode()
-      assert_equal(smgf.graphics.get_blend_mode(), "blend")
-    end)
+  function()
+    smgf.graphics.set_blend_mode("none")
+    smgf.graphics.set_blend_mode()
+    assert_equal(smgf.graphics.get_blend_mode(), "blend")
+  end)
 
 tests.graphics:test("default translation is 0 0", function()
   local tx, ty = smgf.graphics.get_translation()
@@ -327,6 +327,7 @@ tests.graphics:test("can draw line", function()
     assert_equal(r, 10)
     assert_equal(g, 20)
     assert_equal(b, 30)
+    r, g, b = 0, 0, 0
   end
 end)
 
@@ -394,14 +395,14 @@ tests.graphics:test("can load texture from png file", function()
 end)
 
 tests.graphics:test("supported formats", function()
-  -- only png is supported
+  -- only png are supported
   local img1 = smgf.graphics.new("test.png")
 
-  -- jpg (for example) should not be supported and raise an error
+  -- bmp (for example) should not be supported and raise an error
   assert_raises(function()
-    smgf.graphics.new("test.jpg")
-  end,
-      "unable to open file test.jpg (STBIMG_Load_RW(): Couldn't get image info: unknown image type!\n)")
+      smgf.graphics.new("test.bmp")
+    end,
+    "unable to open file test.bmp (Unsupported image format)")
 end)
 
 tests.graphics:test("check dimensions are set on new texture", function()
@@ -605,11 +606,11 @@ tests.graphics:test("can only push 64 graphic states", function()
 end)
 
 tests.graphics:test("multiple pop_state when no state has been pushed",
-    function()
-      smgf.graphics.pop_state()
-      smgf.graphics.pop_state()
-      smgf.graphics.pop_state()
-    end)
+  function()
+    smgf.graphics.pop_state()
+    smgf.graphics.pop_state()
+    smgf.graphics.pop_state()
+  end)
 
 tests.graphics:test("can reset the state", function()
   smgf.graphics.set_color(1, 2, 3, 4)
@@ -639,10 +640,10 @@ tests.graphics:test("reset state values", function()
   assert_equal(smgf.graphics.get_target(), nil)
 end)
 
-tests.graphics:test("can save texture as bmp", function()
+tests.graphics:test("can save texture as png", function()
   smgf.system.set_identity("smgf", "smgftestgame")
   local t = smgf.graphics.new(20, 30)
-  t:save("test.bmp")
+  t:save("screenshot.png")
 end)
 
 -- hard to test, at least it tests that API function can be called without error
@@ -659,7 +660,7 @@ tests.system = uunit.newSuite("system module")
 tests.system.afterEach = function()
   smgf.system.set_identity()
   smgf.system.set_cursor_visible(true)
-  smgf.system.set_window_title("SMGF v1.0.0")
+  smgf.system.set_window_title("SMGF v2.0.0")
   smgf.system.set_dimensions(256, 256)
   smgf.system.set_zoom(1)
   smgf.system.set_fps(nil)
@@ -752,7 +753,7 @@ tests.system:test("rand", function()
 end)
 
 tests.system:test("can get user preferred languages", function()
-  assert_type(smgf.system.get_preferred_locales(), 'table')
+  assert_type(smgf.system.get_preferred_locales(), "table")
 end)
 
 tests.system:test("can get and set clipboard contents", function()
@@ -795,7 +796,7 @@ end)
 
 tests.system:test("can use iconv", function()
   assert_equal(smgf.system.iconv("ISO-8859-1", "UTF-8", "Ébène sud"),
-      "\xC9\x62\xE8\x6E\x65 sud")
+    "\xC9\x62\xE8\x6E\x65 sud")
 
   -- cannot convert to/from unknown encodings
   assert_raises(function()
@@ -807,7 +808,7 @@ tests.system:test("can use iconv", function()
 end)
 
 tests.system:test("can set window title", function()
-  assert_equal(smgf.system.get_window_title(), "SMGF v1.0.0")
+  assert_equal(smgf.system.get_window_title(), "SMGF v2.0.0")
   smgf.system.set_window_title("new window title")
   assert_equal(smgf.system.get_window_title(), "new window title")
 end)
@@ -879,9 +880,9 @@ end)
 
 tests.audio:test("new sound raises if file does not exist", function()
   assert_raises(function()
-    local t = smgf.audio.new("inexistent_file.wav")
-  end,
-      "unable to open sound file 'inexistent_file.wav' (PhysicsFS error: not found)")
+      local t = smgf.audio.new("inexistent_file.wav")
+    end,
+    "unable to open sound file 'inexistent_file.wav' (PhysicsFS error: not found)")
 end)
 
 tests.audio:test("sound get_gain", function()
@@ -905,6 +906,25 @@ tests.audio:test("sound gain must be between 0 and 2", function()
   end, "(must be between 0 and 2)")
 end)
 
+tests.audio:test("sound get_loop is false when not playing", function()
+  local s = smgf.audio.new("0.wav")
+  assert_equal(s:get_loop(), false)
+end)
+
+tests.audio:test("sound loop", function()
+  local s = smgf.audio.new("0.wav")
+  smgf.audio.play(s, true)
+  assert_equal(s:get_loop(), true)
+  assert_equal(smgf.audio.get_loop(s), true)
+
+  -- even paused, still counts as looped
+  smgf.audio.pause(s)
+  assert_equal(s:get_loop(), true)
+
+  smgf.audio.stop(s)
+  assert_equal(s:get_loop(), false)
+end)
+
 tests.audio:test("supported formats", function()
   -- ogg and wav should be supported
   smgf.audio.new("0.wav")
@@ -912,9 +932,9 @@ tests.audio:test("supported formats", function()
 
   -- mp3 should not be supported
   assert_raises(function()
-    smgf.audio.new("0.mp3")
-  end,
-      "unable to open sound file '0.mp3' (SDL_sound error: Sound format unsupported)")
+      smgf.audio.new("0.mp3")
+    end,
+    "unable to open sound file '0.mp3' (Audio data is in unknown/unsupported/corrupt format)")
 end)
 
 tests.audio:test("can play sound", function()
@@ -971,6 +991,17 @@ tests.audio:test("can clone sound", function()
 
   smgf.audio.play(s2)
 end)
+
+tests.audio:test("sound panning", function()
+  local s = smgf.audio.new("0.wav")
+  assert_equal(s:get_pan(), 0) -- defaults to 0
+
+  s:set_pan(-1)
+  assert_equal(s:get_pan(), -1)
+  s:set_pan(1)
+  assert_equal(s:get_pan(), 1)
+end)
+
 
 --
 -- INPUT
@@ -1061,23 +1092,23 @@ tests.io:test("writedir can be mounted by calling set identity", function()
   assert_not_equal(smgf.system.get_write_dir(), "")
   local write_dir = smgf.system.get_write_dir()
   if write_dir == nil then
-    error(string.format('`%s` should not be nil', write_dir))
+    error(string.format("`%s` should not be nil", write_dir))
   end
   assert_str_in("smgftestgame", write_dir)
 end)
 
 tests.io:test("writedir can be unmounted by calling set identity with no arg",
-    function()
-      smgf.system.set_identity("smgf", "smgftestgame")
-      local write_dir = smgf.system.get_write_dir()
-      if write_dir == nil then
-        error(string.format('`%s` should not be nil', write_dir))
-      end
-      assert_str_in("smgftestgame", write_dir)
+  function()
+    smgf.system.set_identity("smgf", "smgftestgame")
+    local write_dir = smgf.system.get_write_dir()
+    if write_dir == nil then
+      error(string.format("`%s` should not be nil", write_dir))
+    end
+    assert_str_in("smgftestgame", write_dir)
 
-      smgf.system.set_identity()
-      assert_equal(smgf.system.get_write_dir(), nil)
-    end)
+    smgf.system.set_identity()
+    assert_equal(smgf.system.get_write_dir(), nil)
+  end)
 
 tests.io:test("cannot open non-existent file", function()
   assert_raises(function()
@@ -1086,11 +1117,11 @@ tests.io:test("cannot open non-existent file", function()
 end)
 
 tests.io:test("cannot open file in write mode if writedir hasn't been set",
-    function()
-      assert_raises(function()
-        local file = smgf.io.open("file.txt", "w")
-      end, "write directory is not set")
-    end)
+  function()
+    assert_raises(function()
+      local file = smgf.io.open("file.txt", "w")
+    end, "write directory is not set")
+  end)
 
 tests.io:test("can write and read to writedir", function()
   smgf.system.set_identity("smgf", "smgftestgame")

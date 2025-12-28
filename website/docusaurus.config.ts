@@ -24,7 +24,12 @@ const config: Config = {
   projectName: "SMGF", // Usually your repo name.
 
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: "warn",
+      onBrokenMarkdownImages: "warn",
+    },
+  },
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -123,7 +128,9 @@ const config: Config = {
         //   ],
         // },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} SMGF, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${
+        new Date().getFullYear()
+      } SMGF, Inc. Built with Docusaurus.`,
     },
     docs: {
       sidebar: {

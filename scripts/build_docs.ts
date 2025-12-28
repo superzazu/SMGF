@@ -1,12 +1,12 @@
-/// Deno 1.40+ script that generates an "api.md" file in Markdown format
+/// Deno 2+ script that generates an "api.md" file in Markdown format
 /// from lua-language-server definitions (see docs-api folder)
 /// usage: deno run --allow-run --allow-read --allow-write scripts/build_docs.ts
-import { join } from "https://deno.land/std@0.216.0/path/mod.ts";
+import { join } from "jsr:@std/path";
 
 const cwd = Deno.cwd();
 const DOC_DIR_PATH = join(cwd, "docs-api");
-const CONFIG_PATH = join(cwd, "scripts/llsConf.json");
-const OUTPUT_PATH = join(cwd, "website/docs/api.md");
+const CONFIG_PATH = join(cwd, "scripts", "llsConf.json");
+const OUTPUT_PATH = join(cwd, "website", "docs", "api.md");
 const tempDirPath = await Deno.makeTempDir();
 
 console.log(`Temporary dir path: ${tempDirPath}`);
@@ -27,6 +27,7 @@ const command = new Deno.Command("lua-language-server", {
     `--configpath="${CONFIG_PATH}"`,
     `--logpath="${tempDirPath}"`,
     `--doc="${DOC_DIR_PATH}"`,
+    `--doc_out_path="${tempDirPath}"`,
     // `--loglevel=trace`,
   ],
 });
@@ -49,7 +50,7 @@ docJson.sort(
   (a, b) =>
     // we want the "main" module (the one will all callbacks) first:
     (isMainModule(b) ? 1 : 0) - (isMainModule(a) ? 1 : 0) ||
-    a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name),
 );
 
 /** Regex to replace all Markdown links in file */
@@ -77,6 +78,10 @@ for (const jsonClass of docJson) {
 
   // ignore empty "smgf" module
   if (jsonClass["name"] === "smgf" && jsonClass["type"] === "type") {
+    continue;
+  }
+
+  if (jsonClass["name"] === "LuaLS" && jsonClass["type"] === "luals.config") {
     continue;
   }
 

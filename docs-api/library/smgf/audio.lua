@@ -7,10 +7,15 @@ smgf.audio = {}
 local Sound = {}
 
 --- Starts playing a sound.
-function Sound:play() end
+--- @param looped? boolean
+function Sound:play(looped) end
 
 --- Pauses the playback of a sound.
 function Sound:pause() end
+
+--- Stops the playback of a sound (with optional fade out)
+--- @param fade_out? number Number of sample frames for fade out (defaults to 0)
+function Sound:stop(fade_out) end
 
 --- Returns the duration of a sound in milliseconds.
 --- @return number Duration in milliseconds
@@ -50,10 +55,6 @@ function Sound:set_gain(gain) end
 --- to "2" (200%).
 --- @return number gain
 function Sound:get_gain() end
-
---- Sets whether a sound should be looped or not.
---- @param looped boolean
-function Sound:set_loop(looped) end
 
 --- Returns whether a sound is looped or not.
 --- @return boolean looped
@@ -96,12 +97,18 @@ function smgf.audio.new(filename, predecoded) end
 
 --- Starts playing a sound.
 --- @param sound SMGFSound Sound to play
-function smgf.audio.play(sound) end
+--- @param looped? boolean
+function smgf.audio.play(sound, looped) end
 
 --- Pauses the playback of a sound.
 --- @see smgf.audio.play to unpause the sound
 --- @param sound SMGFSound Sound to pause
 function smgf.audio.pause(sound) end
+
+--- Stops the playback of a sound (with optional fade out)
+--- @param sound SMGFSound Sound to pause
+--- @param fade_out? number Number of sample frames for fade out (defaults to 0)
+function smgf.audio.stop(sound, fade_out) end
 
 --- Returns the duration of a sound in milliseconds.
 --- @param sound SMGFSound Sound to pause
@@ -150,11 +157,6 @@ function smgf.audio.set_gain(sound, gain) end
 --- @param sound SMGFSound
 --- @return number gain
 function smgf.audio.get_gain(sound) end
-
---- Sets whether a sound should be looped or not.
---- @param sound SMGFSound
---- @param looped boolean
-function smgf.audio.set_loop(sound, looped) end
 
 --- Returns whether a sound is looped or not.
 --- @param sound SMGFSound

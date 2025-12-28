@@ -295,7 +295,7 @@ static int l_iconv(lua_State* L) {
 static int l_get_preferred_locales(lua_State* L) {
   smgf* const c = get_smgf(L);
 
-  SDL_Locale* locale_list = sf_sy_get_preferred_locales(c);
+  SDL_Locale** locale_list = sf_sy_get_preferred_locales(c);
   if (locale_list == NULL) {
     // return luaL_error(L, "unable to retrieve user preferred locales");
     lua_pushnil(L);
@@ -305,11 +305,16 @@ static int l_get_preferred_locales(lua_State* L) {
   lua_newtable(c->L);
 
   int nb = 0;
-  for (SDL_Locale* locale = locale_list; locale->language; locale++) {
+
+  SDL_Locale** locptr = locale_list;
+  while (*locptr) {
+    SDL_Locale* locale = *locptr;
     nb += 1;
     lua_pushinteger(L, nb);
     lua_pushstring(L, locale->language);
     lua_settable(L, -3);
+
+    locptr++;
   }
 
   SDL_free(locale_list);

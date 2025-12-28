@@ -99,7 +99,7 @@ static int l_seek(lua_State* L) {
   sfile* f = (sfile*) luaL_checkudata(L, 1, SMGF_TYPE_FILE);
   Sint64 offset = luaL_checknumber(L, 2);
 
-  static const int mode[] = {RW_SEEK_SET, RW_SEEK_CUR, RW_SEEK_END};
+  static const int mode[] = {SDL_IO_SEEK_SET, SDL_IO_SEEK_CUR, SDL_IO_SEEK_END};
   static const char* const mode_names[] = {"set", "cur", "end", NULL};
   int op = luaL_checkoption(L, 3, "cur", mode_names);
 
@@ -177,7 +177,7 @@ static int l_read(lua_State* L) {
     return luaL_error(L, "error allocating buffer for file reading");
   }
 
-  if (sf_io_read(f, data, bytes, 1) <= 0) {
+  if (sf_io_read(f, data, bytes) <= 0) {
     if (sf_io_tell(f) >= sf_io_size(f)) {
       return luaL_error(L, "unable to read outside of file");
     }
@@ -197,7 +197,7 @@ static int l_write(lua_State* L) {
 
   size_t len;
   const char* str = luaL_checklstring(L, 2, &len);
-  if (sf_io_write(f, (void*) str, len, 1) <= 0) {
+  if (sf_io_write(f, (void*) str, len) <= 0) {
     return luaL_error(L, "unable to write to file: %s", SDL_GetError());
   }
 
@@ -216,7 +216,7 @@ static int l_flush(lua_State* L) {
   smgf* const c = get_smgf(L);
   sfile* f = (sfile*) luaL_checkudata(L, 1, SMGF_TYPE_FILE);
 
-  if (sf_io_flush(f)) {
+  if (!sf_io_flush(f)) {
     return luaL_error(L, "unable to flush file: %s", SDL_GetError());
   }
 

@@ -2,32 +2,40 @@
 #include "../api_lua.h"
 
 static int l_set_master_gain(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   float gain = luaL_checknumber(L, 1);
   luaL_argcheck(L, gain >= 0 && gain <= 2, 1, "must be between 0 and 2");
-  sf_au_set_master_gain(gain);
+  sf_au_set_master_gain(c, gain);
   return 0;
 }
 
 static int l_get_master_gain(lua_State* L) {
-  lua_pushnumber(L, sf_au_get_master_gain());
+  smgf* const c = get_smgf(L);
+
+  lua_pushnumber(L, sf_au_get_master_gain(c));
   return 1;
 }
 
 static int l_set_master_pause(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   bool paused = lua_toboolean(L, 1);
-  sf_au_set_master_pause(paused);
+  sf_au_set_master_pause(c, paused);
   return 0;
 }
 
 static int l_sound_new(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   const char* filename = luaL_checkstring(L, 1);
-  int preloaded = 1; // defaults to preloaded (static)
+  int predecoded = 1; // defaults to predecoded (static)
   if (lua_gettop(L) > 1) {
-    preloaded = lua_toboolean(L, 2);
+    predecoded = lua_toboolean(L, 2);
   }
 
   ssound* s = (ssound*) lua_newuserdata(L, sizeof(ssound));
-  if (sf_au_sound_new(s, filename, preloaded)) {
+  if (sf_au_sound_new(c, s, filename, predecoded)) {
     return luaL_error(
         L, "unable to open sound file '%s' (%s)", filename, SDL_GetError());
   }
@@ -39,18 +47,23 @@ static int l_sound_new(lua_State* L) {
 }
 
 static int l_sound_del(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  sf_au_sound_del(s);
+  sf_au_sound_del(c, s);
   return 0;
 }
 
 static int l_sound_play(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  if (sf_au_sound_is_playing(s)) {
+  if (sf_au_sound_is_playing(c, s)) {
     return 0;
   }
+  bool loop = lua_toboolean(L, 2);
 
-  if (sf_au_sound_play(s)) {
+  if (sf_au_sound_play(c, s, loop)) {
     return luaL_error(L, "unable to play sound file (%s)", SDL_GetError());
   }
 
@@ -58,8 +71,10 @@ static int l_sound_play(lua_State* L) {
 }
 
 static int l_sound_get_duration(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  int duration = sf_au_sound_get_duration(s);
+  int duration = sf_au_sound_get_duration(c, s);
   if (duration == -1) {
     return luaL_error(
         L, "unable to get duration of sound file: %s", SDL_GetError());
@@ -71,24 +86,39 @@ static int l_sound_get_duration(lua_State* L) {
 }
 
 static int l_sound_pause(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  sf_au_sound_pause(s);
+  sf_au_sound_pause(c, s);
+  return 0;
+}
+
+static int l_sound_stop(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
+  ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
+  int fade = luaL_optnumber(L, 2, 0);
+  sf_au_sound_stop(c, s, fade);
   return 0;
 }
 
 static int l_sound_rewind(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  if (sf_au_sound_rewind(s) != 0) {
+  if (!sf_au_sound_rewind(c, s)) {
     return luaL_error(L, "unable to rewind sound file (%s)", SDL_GetError());
   }
   return 0;
 }
 
 static int l_sound_seek(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
 
   int ms = luaL_checknumber(L, 2);
-  if (sf_au_sound_seek(s, ms) != 0) {
+  if (!sf_au_sound_seek(c, s, ms)) {
     return luaL_error(L, "unable to seek sound file (%s)", SDL_GetError());
   }
 
@@ -96,66 +126,79 @@ static int l_sound_seek(lua_State* L) {
 }
 
 static int l_sound_is_playing(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  lua_pushboolean(L, sf_au_sound_is_playing(s));
+  lua_pushboolean(L, sf_au_sound_is_playing(c, s));
   return 1;
 }
 
 static int l_sound_is_predecoded(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  lua_pushboolean(L, sf_au_sound_is_predecoded(s));
+  lua_pushboolean(L, sf_au_sound_is_predecoded(c, s));
   return 1;
 }
 
 static int l_sound_get_pan(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  lua_pushnumber(L, sf_au_sound_get_pan(s));
+  float pan = 0;
+  if (!sf_au_sound_get_pan(c, s, &pan)) {
+    return luaL_error(
+        L, "unable to get panning of sound file (%s)", SDL_GetError());
+  }
+  lua_pushnumber(L, pan);
   return 1;
 }
 
 static int l_sound_set_pan(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
 
   float pan = luaL_checknumber(L, 2);
   luaL_argcheck(L, pan >= -1 && pan <= 1, 2, "must be between -1 and 1");
-  sf_au_sound_set_pan(s, pan);
+  sf_au_sound_set_pan(c, s, pan);
   return 0;
 }
 
 static int l_sound_get_gain(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  lua_pushinteger(L, sf_au_sound_get_gain(s));
+  lua_pushinteger(L, sf_au_sound_get_gain(c, s));
   return 1;
 }
 
 static int l_sound_set_gain(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
 
   float gain = luaL_checknumber(L, 2);
   luaL_argcheck(L, gain >= 0 && gain <= 2, 2, "must be between 0 and 2");
-  sf_au_sound_set_gain(s, gain);
+  sf_au_sound_set_gain(c, s, gain);
   return 0;
 }
 
 static int l_sound_get_loop(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-  lua_pushnumber(L, sf_au_sound_get_loop(s));
+  lua_pushboolean(L, sf_au_sound_get_loop(c, s));
   return 1;
 }
 
-static int l_sound_set_loop(lua_State* L) {
-  ssound* s = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
-
-  bool loop = lua_toboolean(L, 2);
-  sf_au_sound_set_loop(s, loop);
-  return 0;
-}
-
 static int l_sound_clone(lua_State* L) {
+  smgf* const c = get_smgf(L);
+
   ssound* origin = (ssound*) luaL_checkudata(L, 1, SMGF_TYPE_SOUND);
 
   ssound* clone = (ssound*) lua_newuserdata(L, sizeof(ssound));
-  if (sf_au_sound_new(clone, origin->filename, origin->snd->predecoded)) {
+  if (sf_au_sound_new(c, clone, origin->filename, origin->predecoded)) {
     return luaL_error(L, "unable to clone sound file (%s)", SDL_GetError());
   }
 
@@ -174,6 +217,7 @@ static const struct luaL_Reg smgf_audio[] = {
     // {"del_sound", l_del_sound}, // see #25
     {"play", l_sound_play},
     {"pause", l_sound_pause},
+    {"stop", l_sound_stop},
     {"get_duration", l_sound_get_duration},
     {"rewind", l_sound_rewind},
     {"seek", l_sound_seek},
@@ -184,7 +228,6 @@ static const struct luaL_Reg smgf_audio[] = {
     {"get_gain", l_sound_get_gain},
     {"set_gain", l_sound_set_gain},
     {"get_loop", l_sound_get_loop},
-    {"set_loop", l_sound_set_loop},
     {"clone", l_sound_clone},
     {NULL, NULL}};
 
@@ -192,6 +235,7 @@ static const struct luaL_Reg sound_func[] = {
     // static const struct luaL_Reg sound_func[] = {
     {"play", l_sound_play},
     {"pause", l_sound_pause},
+    {"stop", l_sound_stop},
     {"get_duration", l_sound_get_duration},
     {"rewind", l_sound_rewind},
     {"seek", l_sound_seek},
@@ -202,7 +246,6 @@ static const struct luaL_Reg sound_func[] = {
     {"get_gain", l_sound_get_gain},
     {"set_gain", l_sound_set_gain},
     {"get_loop", l_sound_get_loop},
-    {"set_loop", l_sound_set_loop},
     {"clone", l_sound_clone},
     {NULL, NULL}};
 

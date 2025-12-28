@@ -15,11 +15,11 @@ const char* searchpath(
 
   // we iterate over all paths (which are separated by a ";")
   const char* const path_start = path_withmodname;
-  const char* const path_end = path_withmodname + strlen(path_withmodname);
+  const char* const path_end = path_withmodname + SDL_strlen(path_withmodname);
   const char* path_curpos = path_start;
 
   while (path_curpos < path_end) {
-    const char* separator_pos = strchr(path_curpos, *sep);
+    const char* separator_pos = SDL_strchr(path_curpos, *sep);
 
     // if there's no more separator in string, we set the separator to end
     // of string
@@ -76,7 +76,7 @@ int l_smgf_searcher(lua_State* L) {
 
   int file_len = PHYSFS_fileLength(file);
 
-  char* file_contents = calloc(file_len, sizeof(char));
+  char* file_contents = SDL_calloc(file_len, sizeof(char));
   if (PHYSFS_readBytes(file, file_contents, file_len) != file_len) {
     int error_code = PHYSFS_getLastErrorCode();
     return luaL_error(
@@ -88,7 +88,7 @@ int l_smgf_searcher(lua_State* L) {
   luaL_loadbuffer(L, file_contents, file_len, mod_name);
   lua_pushstring(L, mod_name);
 
-  free(file_contents);
+  SDL_free(file_contents);
   PHYSFS_close(file);
 
   return 2;

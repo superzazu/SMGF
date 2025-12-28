@@ -8,7 +8,7 @@ int sf_kb_is_down(smgf* const c, const char* key, bool* is_down) {
     return -1;
   }
 
-  *is_down = c->keyboard_state[sc] == 1;
+  *is_down = c->keyboard_state[sc] == true;
 
   return 0;
 }
@@ -20,21 +20,21 @@ int sf_kb_is_up(smgf* const c, const char* key, bool* is_up) {
     return -1;
   }
 
-  *is_up = c->keyboard_state[sc] == 0;
+  *is_up = c->keyboard_state[sc] == false;
 
   return 0;
 }
 
-void sf_kb_set_textinput(bool enable) {
+void sf_kb_set_textinput(smgf* const c, bool enable) {
   if (enable) {
-    SDL_StartTextInput();
+    SDL_StartTextInput(c->window);
   } else {
-    SDL_StopTextInput();
+    SDL_StopTextInput(c->window);
   }
 }
 
-bool sf_kb_get_textinput(void) {
-  return SDL_IsTextInputActive();
+bool sf_kb_get_textinput(smgf* const c) {
+  return SDL_TextInputActive(c->window);
 }
 
 // mouse
@@ -45,15 +45,15 @@ void sf_ms_is_down(int button, bool* is_down) {
   // - 3: Right mouse button
 
   int buttons = SDL_GetMouseState(NULL, NULL);
-  *is_down = buttons & SDL_BUTTON(button);
+  *is_down = buttons & SDL_BUTTON_MASK(button);
 }
 
-void sf_ms_get_pos(smgf* const c, int* x, int* y) {
-  int _x = 0, _y = 0;
+void sf_ms_get_pos(smgf* const c, float* x, float* y) {
+  float _x = 0, _y = 0;
   SDL_GetMouseState(&_x, &_y);
 
   float lx = 0, ly = 0;
-  SDL_RenderWindowToLogical(c->renderer, _x, _y, &lx, &ly);
+  SDL_RenderCoordinatesFromWindow(c->renderer, _x, _y, &lx, &ly);
 
   // cap the coordinates to the game screen, so that mouse_get_pos()
   // always returns a valid vector inside game screen
@@ -66,41 +66,41 @@ void sf_ms_get_pos(smgf* const c, int* x, int* y) {
   if (ly >= c->height)
     ly = c->height - 1;
 
-  *x = (int) lx;
-  *y = (int) ly;
+  *x = lx;
+  *y = ly;
 }
 
 // gamepad
 // returns true if gamepad is opened, false if not
 bool sf_gp_is_open(int player_index) {
-  SDL_GameController* pad = SDL_GameControllerFromPlayerIndex(player_index);
-  return SDL_GameControllerGetAttached(pad);
+  SDL_Gamepad* pad = SDL_GetGamepadFromPlayerIndex(player_index);
+  return SDL_GamepadConnected(pad);
 }
 
 // returns 0 if gamepad does not exist
-bool sf_gp_is_down(int player_index, SDL_GameControllerButton button) {
-  SDL_GameController* pad = SDL_GameControllerFromPlayerIndex(player_index);
+bool sf_gp_is_down(int player_index, SDL_GamepadButton button) {
+  SDL_Gamepad* pad = SDL_GetGamepadFromPlayerIndex(player_index);
   if (pad == NULL) {
     return 0;
   }
 
-  return SDL_GameControllerGetButton(pad, button);
+  return SDL_GetGamepadButton(pad, button);
 }
 
 // returns 0 if gamepad does not exist
-float sf_gp_get_axis(int player_index, SDL_GameControllerAxis axis) {
-  SDL_GameController* pad = SDL_GameControllerFromPlayerIndex(player_index);
+float sf_gp_get_axis(int player_index, SDL_GamepadAxis axis) {
+  SDL_Gamepad* pad = SDL_GetGamepadFromPlayerIndex(player_index);
   if (pad == NULL) {
     return 0;
   }
 
-  return (float) SDL_GameControllerGetAxis(pad, axis) / SDL_MAX_SINT16;
+  return (float) SDL_GetGamepadAxis(pad, axis) / SDL_MAX_SINT16;
 }
 
 // returns 0 if OK, -1 if rumble not supported for this gamepad, 1 if not found
 int sf_gp_rumble(
     int player_index, float duration_s, float lintensity, float rintensity) {
-  SDL_GameController* pad = SDL_GameControllerFromPlayerIndex(player_index);
+  SDL_Gamepad* pad = SDL_GetGamepadFromPlayerIndex(player_index);
   if (pad == NULL) {
     return 1;
   }
@@ -111,16 +111,16 @@ int sf_gp_rumble(
   rintensity = rintensity > 1 ? 1 : (rintensity < 0 ? 0 : rintensity);
   Uint16 rintensity_uint = rintensity * 0xFFFF;
 
-  return SDL_GameControllerRumble(
+  return SDL_RumbleGamepad(
       pad, lintensity_uint, rintensity_uint, duration_s * 1000);
 }
 
 // returns NULL if gamepad is not known
 const char* sf_gp_get_name(int player_index) {
-  SDL_GameController* pad = SDL_GameControllerFromPlayerIndex(player_index);
+  SDL_Gamepad* pad = SDL_GetGamepadFromPlayerIndex(player_index);
   if (pad == NULL) {
     return NULL;
   }
 
-  return SDL_GameControllerName(pad);
+  return SDL_GetGamepadName(pad);
 }

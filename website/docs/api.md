@@ -5,7 +5,6 @@ sidebar_position: 5
 
 ## smgf
 
-version: 1.0
 
 
 ```lua
@@ -134,12 +133,13 @@ function smgf.audio.pause(sound: SMGFSound)
 Pauses the playback of a sound.
 
 @*param* `sound` — Sound to pause
+
 See: [smgf.audio.play](#smgf.audio.play) to unpause the sound
 
 ### smgf.audio.play {#smgf.audio.play}
 
 ```lua
-function smgf.audio.play(sound: SMGFSound)
+function smgf.audio.play(sound: SMGFSound, looped?: boolean)
 ```
 
 Starts playing a sound.
@@ -175,14 +175,6 @@ function smgf.audio.set_gain(sound: SMGFSound, gain: number)
 Modifies the gain ("volume") of a sound. Expects a number from "0" (silence)
  to "2" (200%). Default value is "0" (100%).
 
-### smgf.audio.set_loop {#smgf.audio.set_loop}
-
-```lua
-function smgf.audio.set_loop(sound: SMGFSound, looped: boolean)
-```
-
-Sets whether a sound should be looped or not.
-
 ### smgf.audio.set_master_gain {#smgf.audio.set_master_gain}
 
 ```lua
@@ -211,38 +203,101 @@ function smgf.audio.set_pan(sound: SMGFSound, pan: number)
 Modifies the panning of a sound. Expects a number from "-1" (left) to "1"
  (right). Default value is "0" (center).
 
+### smgf.audio.stop {#smgf.audio.stop}
+
+```lua
+function smgf.audio.stop(sound: SMGFSound, fade_out?: number)
+```
+
+Stops the playback of a sound (with optional fade out)
+
+@*param* `sound` — Sound to pause
+
+@*param* `fade_out` — Number of sample frames for fade out (defaults to 0)
+
+
+---
+## smgf.conf
+
+
+### smgf.conf.application {#smgf.conf.application}
+
+```lua
+string?
+```
+
+Your application/game name
+
+### smgf.conf.cursor_visible {#smgf.conf.cursor_visible}
+
+```lua
+boolean?
+```
+
+Whether mouse cursor is visible when hovering game window
+
+### smgf.conf.fps {#smgf.conf.fps}
+
+```lua
+number?
+```
+
+FPS limiting of the game (set to 0 to disable FPS limiting)
+
+### smgf.conf.height {#smgf.conf.height}
+
+```lua
+number?
+```
+
+Window height in pixels
+
+### smgf.conf.organisation {#smgf.conf.organisation}
+
+```lua
+string?
+```
+
+Your organisation name
+
+### smgf.conf.width {#smgf.conf.width}
+
+```lua
+number?
+```
+
+Window width in pixels
+
+### smgf.conf.window_title {#smgf.conf.window_title}
+
+```lua
+string?
+```
+
+Window title name
+
+### smgf.conf.zoom {#smgf.conf.zoom}
+
+```lua
+number?
+```
+
+Zoom of the game
+
 
 ---
 ## smgf.device_reset
 
-Callback, called on SDL_RENDER_DEVICE_RESET event.
-
-
-```lua
-fun()
-```
 
 
 ---
 ## smgf.draw
 
-Callback, called every frame after `smgf.update`. All drawing operations should be done here.
-
-
-```lua
-fun()
-```
 
 
 ---
 ## smgf.focus
 
-Callback, called when the smgf window loses or gains focus.
-
-
-```lua
-fun(focused: boolean)
-```
 
 
 ---
@@ -341,63 +396,26 @@ Rumbles the given gamepad.
 ---
 ## smgf.gamepad_added
 
-Callback, called when a gamepad has been detected. The "player_index" is a number
- between 1 and 4 to identify the player.
-
-
-```lua
-fun(player_index: SMGFPlayerIndex)
-```
 
 
 ---
 ## smgf.gamepad_axismotion
 
-Callback, called when there has been an axis motion on a gamepad. The "player_index" is a number
- between 1 and 4 to identify the player. The "axis" parameter can either be
- "leftx", "lefty", "rightx", "righty", "lefttrigger" or "righttrigger". The "value"
- parameter is in the range [-1;1].
-
-
-```lua
-fun(player_index: SMGFPlayerIndex, axis: SMGFGamepadAxis, value: number)
-```
 
 
 ---
 ## smgf.gamepad_down
 
-Callback, called when a button has been pressed on a gamepad. The "player_index" is a number
- between 1 and 4 to identify the player.
-
-
-```lua
-fun(player_index: SMGFPlayerIndex, button_no: SMGFGamepadButton)
-```
 
 
 ---
 ## smgf.gamepad_removed
 
-Callback, called when a gamepad has been removed. The "player_index" is a number
- between 1 and 4 to identify the player.
-
-
-```lua
-fun(player_index: SMGFPlayerIndex)
-```
 
 
 ---
 ## smgf.gamepad_up
 
-Callback, called when a button has been released on a gamepad. The "player_index" is a number
- between 1 and 4 to identify the player.
-
-
-```lua
-fun(player_index: SMGFPlayerIndex, button_no: SMGFGamepadButton)
-```
 
 
 ---
@@ -537,6 +555,7 @@ mode:
     | "mod"
     | "mul"
 ```
+
 See: [SMGFTexture.get_blend_mode](#SMGFTexture.get_blend_mode)
 
 ### smgf.graphics.get_color {#smgf.graphics.get_color}
@@ -622,6 +641,7 @@ Creates a new empty texture which can be drawn upon.
 @*param* `width` — Width of texture to create
 
 @*param* `height` — Height of texture to create
+
 See: [smgf.graphics.set_target](#smgf.graphics.set_target)
 
 ### smgf.graphics.pop_state {#smgf.graphics.pop_state}
@@ -636,7 +656,24 @@ Destroys the current graphic state and activates the previous one. If no
 ### smgf.graphics.print {#smgf.graphics.print}
 
 ```lua
-function smgf.graphics.print(x: number, y: number, color: number, text: string)
+function smgf.graphics.print(x: number, y: number, text: string, bg_color?: number[])
+```
+
+Draws text using an internal debug font, using SMGF current color.
+ Meant as a quick way to display debug info on screen.
+
+@*param* `x` — The position to draw to (X)
+
+@*param* `y` — The position to draw to (Y)
+
+@*param* `text` — The text to draw (encoded in ISO-8859-1)
+
+@*param* `bg_color` — Background color (R, G, B, A components)
+
+### smgf.graphics.print_color {#smgf.graphics.print_color}
+
+```lua
+function smgf.graphics.print_color(x: number, y: number, color: number, text: string)
 ```
 
 Draws text using an internal debug font.
@@ -698,6 +735,7 @@ mode:
     | "mod"
     | "mul"
 ```
+
 See: [SMGFTexture.set_blend_mode](#SMGFTexture.set_blend_mode)
 
 ### smgf.graphics.set_color {#smgf.graphics.set_color}
@@ -706,7 +744,7 @@ See: [SMGFTexture.set_blend_mode](#SMGFTexture.set_blend_mode)
 function smgf.graphics.set_color(r: number, g: number, b: number, a?: number)
 ```
 
-Sets the current color.
+Sets the current color. If no parameter is passed, color is set to opaque white (all 255).
 
 @*param* `r` — Red component (0 - 255)
 
@@ -748,12 +786,6 @@ Adds "x" and "y" to the drawing origin: all future drawing
 ---
 ## smgf.init
 
-Callback, called once at the start of the program.
-
-
-```lua
-fun()
-```
 
 
 ---
@@ -836,29 +868,11 @@ type:
 ---
 ## smgf.key_down
 
-Callback, called when a keyboard key is pressed. The "mod" parameter is a table and
- represent the key modifiers currently pressed: "lshift", "rshift", "lctrl",
- "rctrl", "lalt", "ralt", "lgui" (Windows key or Command ⌘ on Mac),
- "rgui", "num", "caps", "mode".
-
-
-```lua
-fun(key: string, mod: SMGFKeyMod[])
-```
 
 
 ---
 ## smgf.key_up
 
-Callback, called when a keyboard key is released. The "mod" parameter is a table and
- represent the key modifiers currently pressed: "lshift", "rshift", "lctrl",
- "rctrl", "lalt", "ralt", "lgui" (Windows key or Command ⌘ on Mac),
- "rgui", "num", "caps", "mode".
-
-
-```lua
-fun(key: string, mod: SMGFKeyMod[])
-```
 
 
 ---
@@ -953,46 +967,21 @@ Returns whether a key is pressed. Expects a number: 1 is left button, 2 is
 ---
 ## smgf.mouse_down
 
-Callback, called on mouse press. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
-
-
-```lua
-fun(x: number, y: number, button_no: number)
-```
 
 
 ---
 ## smgf.mouse_moved
 
-Callback, called on mouse movement. The first two arguments represent the current
- mouse position, and the two last represent the actual mouse movement.
-
-
-```lua
-fun(x: number, y: number, xdiff: number, ydiff: number)
-```
 
 
 ---
 ## smgf.mouse_up
 
-Callback, called on mouse release. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
-
-
-```lua
-fun(x: number, y: number, button_no: number)
-```
 
 
 ---
 ## smgf.mouse_wheel
 
-Callback, called on mouse wheel movement.
-
-
-```lua
-fun(x: number, y: number)
-```
 
 
 ---
@@ -1100,7 +1089,7 @@ function smgf.system.get_platform()
   -> platform: string
 ```
 
-Returns the platform on which the game is running on: "Linux", "Mac OS X", "Windows" or "Emscripten".
+Returns the platform on which the game is running on: "Linux", "macOS", "Windows" or "Emscripten".
 
 @*return* `platform` — The platform on which the game is running on
 
@@ -1158,6 +1147,7 @@ Returns the path to the writeable directory, or nil if the identity of the
  game has not been set.
 
 @*return* `path` — The path to the writeable directory
+
 See: [smgf.system.set_identity](#smgf.system.set_identity)
 
 ### smgf.system.get_zoom {#smgf.system.get_zoom}
@@ -1187,6 +1177,16 @@ Converts a string between encodings.
 @*param* `str` — The string to convert
 
 @*return* `converted` — The converted string
+
+### smgf.system.log {#smgf.system.log}
+
+```lua
+function smgf.system.log(str: string)
+```
+
+Logs a string
+
+@*param* `str` — String to log
 
 ### smgf.system.open_url {#smgf.system.open_url}
 
@@ -1326,59 +1326,26 @@ Waits for a given time (in seconds) before returning to the program.
 ---
 ## smgf.targets_reset
 
-Callback, called on SDL_RENDER_TARGETS_RESET event.
-
-
-```lua
-fun()
-```
 
 
 ---
 ## smgf.text_input
 
-Callback, called on text input. Needs to be enabled first with "smgf.keyboard.set_textinput".
-
-
-```lua
-fun(text: string)
-```
 
 
 ---
 ## smgf.update
 
-Callback, called every frame before `smgf.draw`. "dt" represents the seconds since the last call to `smgf.update`. All game updates should be done there.
-
-
-```lua
-fun(dt: number)
-```
 
 
 ---
 ## SMGFBlendMode
 
-```lua
---  Blend mode.
-SMGFBlendMode:
-    | "none"
-    | "blend"
-    | "add"
-    | "mod"
-    | "mul"
-```
-
-
-```lua
-"add"|"blend"|"mod"|"mul"|"none"
-```
 
 
 ---
 ## SMGFFile
 
-A file that can be read and/or written to.
 
 ### SMGFFile.close {#SMGFFile.close}
 
@@ -1483,125 +1450,36 @@ Writes a string to a file.
 ---
 ## SMGFFlip
 
-```lua
-SMGFFlip:
-    | "none"
-    | "horizontal"
-    | "vertical"
-```
-
-
-```lua
-"horizontal"|"none"|"vertical"
-```
 
 
 ---
 ## SMGFGamepadAxis
 
-```lua
-SMGFGamepadAxis:
-    | "leftx"
-    | "lefty"
-    | "rightx"
-    | "righty"
-    | "lefttrigger"
-    | "righttrigger"
-```
-
-
-```lua
-"lefttrigger"|"leftx"|"lefty"|"righttrigger"|"rightx"|"righty"
-```
 
 
 ---
 ## SMGFGamepadButton
 
-```lua
-SMGFGamepadButton:
-    | "a"
-    | "b"
-    | "x"
-    | "y"
-    | "back"
-    | "guide"
-    | "start"
-    | "leftstick"
-    | "rightstick"
-    | "leftshoulder"
-    | "rightshoulder"
-    | "dpup"
-    | "dpdown"
-    | "dpleft"
-    | "dpright"
-    | "misc1"
-    | "paddle1"
-    | "paddle2"
-    | "paddle3"
-    | "paddle4"
-    | "touchpad"
-```
-
-
-```lua
-"a"|"b"|"back"|"dpdown"|"dpleft"|"dpright"|"dpup"|"guide"|"leftshoulder"|"leftstick"|"misc1"|"paddle1"|"paddle2"|"paddle3"|"paddle4"|"rightshoulder"|"rightstick"|"start"|"touchpad"|"x"...(+1)
-```
 
 
 ---
 ## SMGFKeyMod
 
-```lua
---  A key modifier (such as "shift", "control", "command", etc.)
-SMGFKeyMod:
-    | "lshift"
-    | "rshift"
-    | "lctrl"
-    | "rctrl"
-    | "lalt"
-    | "ralt"
-    | "lgui"
-    | "rgui"
-    | "num"
-    | "caps"
-    | "mode"
-```
-
-
-```lua
-"caps"|"lalt"|"lctrl"|"lgui"|"lshift"|"mode"|"num"|"ralt"|"rctrl"|"rgui"|"rshift"
-```
 
 
 ---
 ## SMGFPlayerIndex
 
-A number between 1 and 4 to identify the player. The first gamepad plugged
- will be "1", the second "2", the third "3" etc.
-
-
-```lua
-number
-```
 
 
 ---
 ## SMGFQuad
 
-A quadrilateral, used to work on a portion of a texture.
- Requires 4 elements: x, y, width and height.
-
-
-```lua
-number[]
-```
 
 
 ---
 ## SMGFSound
 
-A sound that can be played.
 
 ### SMGFSound.clone {#SMGFSound.clone}
 
@@ -1681,7 +1559,7 @@ Pauses the playback of a sound.
 ### SMGFSound.play {#SMGFSound.play}
 
 ```lua
-(method) SMGFSound:play()
+(method) SMGFSound:play(looped?: boolean)
 ```
 
 Starts playing a sound.
@@ -1713,14 +1591,6 @@ Modifies the playback position of a sound.
 Modifies the gain ("volume") of a sound. Expects a number from "0" (silence)
  to "2" (200%). Default value is "0" (100%).
 
-### SMGFSound.set_loop {#SMGFSound.set_loop}
-
-```lua
-(method) SMGFSound:set_loop(looped: boolean)
-```
-
-Sets whether a sound should be looped or not.
-
 ### SMGFSound.set_pan {#SMGFSound.set_pan}
 
 ```lua
@@ -1730,11 +1600,20 @@ Sets whether a sound should be looped or not.
 Modifies the panning of a sound. Expects a number from "-1" (left) to "1"
  (right). Default value is "0" (center).
 
+### SMGFSound.stop {#SMGFSound.stop}
+
+```lua
+(method) SMGFSound:stop(fade_out?: number)
+```
+
+Stops the playback of a sound (with optional fade out)
+
+@*param* `fade_out` — Number of sample frames for fade out (defaults to 0)
+
 
 ---
 ## SMGFTexture
 
-A texture that can be draw on screen (or on an offscreen target)
 
 ### SMGFTexture.draw {#SMGFTexture.draw}
 
@@ -1768,6 +1647,7 @@ flip:
     | "horizontal"
     | "vertical"
 ```
+
 See: [smgf.graphics.draw](#smgf.graphics.draw) For the list of all parameters
 
 ### SMGFTexture.get_blend_mode {#SMGFTexture.get_blend_mode}

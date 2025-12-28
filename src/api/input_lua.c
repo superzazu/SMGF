@@ -32,13 +32,13 @@ static int l_keyboard_is_up(lua_State* L) {
 static int l_set_textinput(lua_State* L) {
   smgf* const c = get_smgf(L);
   bool enable = lua_toboolean(L, 1);
-  sf_kb_set_textinput(enable);
+  sf_kb_set_textinput(c, enable);
   return 0;
 }
 
 static int l_get_textinput(lua_State* L) {
   smgf* const c = get_smgf(L);
-  lua_pushboolean(L, sf_kb_get_textinput());
+  lua_pushboolean(L, sf_kb_get_textinput(c));
   return 1;
 }
 
@@ -62,31 +62,31 @@ static int l_mouse_is_down(lua_State* L) {
 static int l_mouse_get_pos(lua_State* L) {
   smgf* const c = get_smgf(L);
 
-  int x, y;
+  float x, y;
   sf_ms_get_pos(c, &x, &y);
 
-  lua_pushinteger(L, x);
-  lua_pushinteger(L, y);
+  lua_pushnumber(L, x);
+  lua_pushnumber(L, y);
   return 2;
 }
 
 static int l_mouse_get_x(lua_State* L) {
   smgf* const c = get_smgf(L);
 
-  int x, y;
+  float x, y;
   sf_ms_get_pos(c, &x, &y);
 
-  lua_pushinteger(L, x);
+  lua_pushnumber(L, x);
   return 1;
 }
 
 static int l_mouse_get_y(lua_State* L) {
   smgf* const c = get_smgf(L);
 
-  int x, y;
+  float x, y;
   sf_ms_get_pos(c, &x, &y);
 
-  lua_pushinteger(L, y);
+  lua_pushnumber(L, y);
   return 1;
 }
 
@@ -106,10 +106,10 @@ static int l_gamepad_is_down(lua_State* L) {
   int player_index = luaL_checknumber(L, 1);
   // luaL_argcheck(L, player_index >= 0, 1, "player index must be positive");
   const char* button_name = luaL_checkstring(L, 2);
-  int button_id = SDL_GameControllerGetButtonFromString(button_name);
+  int button_id = SDL_GetGamepadButtonFromString(button_name);
 
   luaL_argcheck(
-      L, button_id != SDL_CONTROLLER_BUTTON_INVALID, 2,
+      L, button_id != SDL_GAMEPAD_BUTTON_INVALID, 2,
       "expected a valid button name");
 
   lua_pushboolean(L, sf_gp_is_down(player_index, button_id));
@@ -121,11 +121,10 @@ static int l_gamepad_get_axis(lua_State* L) {
   int player_index = luaL_checknumber(L, 1);
   // luaL_argcheck(L, player_index >= 0, 1, "player index must be positive");
   const char* axis_name = luaL_checkstring(L, 2);
-  int axis_id = SDL_GameControllerGetAxisFromString(axis_name);
+  int axis_id = SDL_GetGamepadAxisFromString(axis_name);
 
   luaL_argcheck(
-      L, axis_id != SDL_CONTROLLER_AXIS_INVALID, 2,
-      "expected a valid axis name");
+      L, axis_id != SDL_GAMEPAD_AXIS_INVALID, 2, "expected a valid axis name");
 
   float axis_value = sf_gp_get_axis(player_index, axis_id);
   lua_pushnumber(L, axis_value);

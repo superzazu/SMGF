@@ -8,7 +8,8 @@ void sf_sy_get_window_size(smgf* const c, int* w, int* h) {
 
 void sf_sy_set_window_size(smgf* const c, int w, int h) {
   SDL_SetWindowMinimumSize(c->window, w, h);
-  SDL_RenderSetLogicalSize(c->renderer, w, h);
+  SDL_SetRenderLogicalPresentation(
+      c->renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
   SDL_SetWindowSize(c->window, w * c->zoom, h * c->zoom);
 }
 
@@ -38,11 +39,15 @@ void sf_sy_set_zoom(smgf* const c, int zoom) {
 }
 
 bool sf_sy_get_cursor_visible(smgf* const c) {
-  return SDL_ShowCursor(SDL_QUERY);
+  return SDL_CursorVisible();
 }
 
 void sf_sy_set_cursor_visible(smgf* const c, bool visible) {
-  SDL_ShowCursor(visible);
+  if (visible) {
+    SDL_ShowCursor();
+  } else {
+    SDL_HideCursor();
+  }
 }
 
 const char* sf_sy_get_window_title(smgf* const c) {
@@ -172,8 +177,8 @@ char* sf_sy_iconv(
   return SDL_iconv_string(to, from, str, SDL_strlen(str) + 1);
 }
 
-SDL_Locale* sf_sy_get_preferred_locales(smgf* const c) {
-  return SDL_GetPreferredLocales();
+SDL_Locale** sf_sy_get_preferred_locales(smgf* const c) {
+  return SDL_GetPreferredLocales(NULL);
 }
 
 char* sf_sy_get_version(smgf* const c) {

@@ -5,7 +5,7 @@ smgf.system = {}
 --- Exits smgf gracefully.
 function smgf.system.quit() end
 
---- Returns the platform on which the game is running on: "Linux", "Mac OS X", "Windows" or "Emscripten".
+--- Returns the platform on which the game is running on: "Linux", "macOS", "Windows" or "Emscripten".
 --- @return string platform The platform on which the game is running on
 function smgf.system.get_platform() end
 
