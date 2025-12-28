@@ -5,7 +5,7 @@ Linux and Windows.
 
 Features:
 
-- minimal Lua (5.4) API, with exports for the web, macOS, Linux and Windows
+- minimal Lua (5.5) API, with exports for the web, macOS, Linux and Windows
 - LSP annotations available for the whole API
 - a simple hardware-accelerated 2D API powered by the SDL3
 - streamed and static audio sources from multiple sound formats (ogg and wav by default, others formats such as mp3, flac, and tracker formats can be configured on build)

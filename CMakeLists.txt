@@ -129,42 +129,42 @@ endif()
 
 ## Lua
 set(LUA_SRCS
-  deps/lua-5.4.6/src/lapi.c
-  deps/lua-5.4.6/src/lcode.c
-  deps/lua-5.4.6/src/lctype.c
-  deps/lua-5.4.6/src/ldebug.c
-  deps/lua-5.4.6/src/ldo.c
-  deps/lua-5.4.6/src/ldump.c
-  deps/lua-5.4.6/src/lfunc.c
-  deps/lua-5.4.6/src/lgc.c
-  deps/lua-5.4.6/src/llex.c
-  deps/lua-5.4.6/src/lmem.c
-  deps/lua-5.4.6/src/lobject.c
-  deps/lua-5.4.6/src/lopcodes.c
-  deps/lua-5.4.6/src/lparser.c
-  deps/lua-5.4.6/src/lstate.c
-  deps/lua-5.4.6/src/lstring.c
-  deps/lua-5.4.6/src/ltable.c
-  deps/lua-5.4.6/src/ltm.c
-  deps/lua-5.4.6/src/lundump.c
-  deps/lua-5.4.6/src/lvm.c
-  deps/lua-5.4.6/src/lzio.c
-  deps/lua-5.4.6/src/lauxlib.c
-  deps/lua-5.4.6/src/lbaselib.c
-  deps/lua-5.4.6/src/lcorolib.c
-  deps/lua-5.4.6/src/ldblib.c
-  deps/lua-5.4.6/src/liolib.c
-  deps/lua-5.4.6/src/lmathlib.c
-  deps/lua-5.4.6/src/loslib.c
-  deps/lua-5.4.6/src/lstrlib.c
-  deps/lua-5.4.6/src/ltablib.c
-  deps/lua-5.4.6/src/lutf8lib.c
-  deps/lua-5.4.6/src/loadlib.c
-  deps/lua-5.4.6/src/linit.c
+  deps/lua-5.5.0/src/lapi.c
+  deps/lua-5.5.0/src/lcode.c
+  deps/lua-5.5.0/src/lctype.c
+  deps/lua-5.5.0/src/ldebug.c
+  deps/lua-5.5.0/src/ldo.c
+  deps/lua-5.5.0/src/ldump.c
+  deps/lua-5.5.0/src/lfunc.c
+  deps/lua-5.5.0/src/lgc.c
+  deps/lua-5.5.0/src/llex.c
+  deps/lua-5.5.0/src/lmem.c
+  deps/lua-5.5.0/src/lobject.c
+  deps/lua-5.5.0/src/lopcodes.c
+  deps/lua-5.5.0/src/lparser.c
+  deps/lua-5.5.0/src/lstate.c
+  deps/lua-5.5.0/src/lstring.c
+  deps/lua-5.5.0/src/ltable.c
+  deps/lua-5.5.0/src/ltm.c
+  deps/lua-5.5.0/src/lundump.c
+  deps/lua-5.5.0/src/lvm.c
+  deps/lua-5.5.0/src/lzio.c
+  deps/lua-5.5.0/src/lauxlib.c
+  deps/lua-5.5.0/src/lbaselib.c
+  deps/lua-5.5.0/src/lcorolib.c
+  deps/lua-5.5.0/src/ldblib.c
+  deps/lua-5.5.0/src/liolib.c
+  deps/lua-5.5.0/src/lmathlib.c
+  deps/lua-5.5.0/src/loadlib.c
+  deps/lua-5.5.0/src/loslib.c
+  deps/lua-5.5.0/src/lstrlib.c
+  deps/lua-5.5.0/src/ltablib.c
+  deps/lua-5.5.0/src/lutf8lib.c
+  deps/lua-5.5.0/src/linit.c
 )
 add_library(lua STATIC EXCLUDE_FROM_ALL ${LUA_SRCS})
 
-target_include_directories(lua PRIVATE deps/lua-5.4.6/src)
+target_include_directories(lua PRIVATE deps/lua-5.5.0/src)
 
 ## physfs
 option(PHYSFS_ARCHIVE_ZIP "" ON)
@@ -247,7 +247,7 @@ add_dependencies(SMGF
 )
 
 target_include_directories(SMGF PRIVATE
-  deps/lua-5.4.6/src
+  deps/lua-5.5.0/src
   deps/physfs/src
   deps/physfs/extras
   deps/DBGP

@@ -164,7 +164,7 @@ void lua_api_init(smgf* const c) {
   // we have to setup a custom package loader into package.searchers
   // so that modules are loaded through physfs
   // We overwrite package.searcher n°2 (the one using package.path). See:
-  // https://www.lua.org/manual/5.4/manual.html#pdf-package.searchers
+  // https://www.lua.org/manual/5.5/manual.html#pdf-package.searchers
   lua_getglobal(c->L, "package");
   lua_getfield(c->L, -1, "searchers");
   lua_pushcfunction(c->L, l_smgf_searcher);

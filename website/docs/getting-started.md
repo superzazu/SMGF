@@ -176,7 +176,7 @@ Here is what your `.luarc.json` file should look like:
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
-  "runtime.version": "Lua 5.4",
+  "runtime.version": "Lua 5.5",
   "workspace.library": ["/<path-to-SMGF>/docs-api"]
 }
 ```

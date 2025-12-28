@@ -3,7 +3,7 @@
   "name": "SMGF",
   "words": ["smgf%.%w+"],
   "settings": {
-    "Lua.runtime.version": "Lua 5.4",
+    "Lua.runtime.version": "Lua 5.5",
     "Lua.runtime.builtin": {
       "basic": "default",
       "bit": "default",
