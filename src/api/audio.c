@@ -3,11 +3,11 @@
 static int mixer = 0;
 
 void sf_au_set_master_gain(smgf* const c, float vol) {
-  MIX_SetMasterGain(c->mixer, vol);
+  MIX_SetMixerGain(c->mixer, vol);
 }
 
 float sf_au_get_master_gain(smgf* const c) {
-  return MIX_GetMasterGain(c->mixer);
+  return MIX_GetMixerGain(c->mixer);
 }
 
 void sf_au_set_master_pause(smgf* const c, int paused) {
@@ -137,5 +137,5 @@ bool sf_au_sound_set_gain(smgf* const c, ssound* const s, float vol) {
 }
 
 bool sf_au_sound_get_loop(smgf* const c, ssound* const s) {
-  return MIX_TrackLooping(s->track);
+  return MIX_GetTrackLoops(s->track) != 0;
 }

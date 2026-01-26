@@ -196,3 +196,9 @@ void lua_api_init(smgf* const c) {
   // set smgf table global
   lua_setglobal(c->L, "smgf");
 }
+
+double lua_get_memory_kb(lua_State* L) {
+  int count_k = lua_gc(L, LUA_GCCOUNT, 0);
+  int count_b = lua_gc(L, LUA_GCCOUNTB, 0);
+  return count_k + (count_b / 1024.0);
+}

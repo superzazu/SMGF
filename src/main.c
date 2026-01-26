@@ -17,14 +17,16 @@
 
 #include "SDL_DBGP_unscii16.h"
 
-#if !SDL_VERSION_ATLEAST(3, 1, 5)
-#error SMGF requires SDL 3.1.5 or later.
+#if !SDL_VERSION_ATLEAST(3, 4, 0)
+#error SMGF requires SDL 3.4.0 or later.
 #endif
 
 // main loop variables
 static int start_time = 0;
 static int end_time = 0;
 static int dt = 0;
+static double start_mem = 0;
+static double end_mem = 0;
 static SDL_FRect dst_rect = {0};
 static smgf c;
 static char* bundled_game_path = NULL;
@@ -218,6 +220,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
   dt = start_time - end_time;
 
   // update
+  start_mem = lua_get_memory_kb(c.L);
   c.dt = dt / 1000.f;
   smgf_lupdate(&c);
 
@@ -244,6 +247,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
   }
 
   end_time = start_time;
+  end_mem = lua_get_memory_kb(c.L);
 
 // see https://github.com/libsdl-org/SDL/issues/1871
 #if TARGET_OS_MAC
@@ -254,6 +258,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
   // printf(">> %s\n", lua_type(c.L, 1) == LUA_TNONE ? "none" : "something");
   // printf(">> %d elements on the stack\n", lua_gettop(c.L));
+
+  // printf(">> mem (KB):\tdiff: %f\ttotal: %f\n", end_mem - start_mem,
+  // end_mem);
 
   return SDL_APP_CONTINUE;
 }

@@ -46,7 +46,7 @@ endif()
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG origin/main
+  GIT_TAG origin/release-3.4.x
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
   EXCLUDE_FROM_ALL
@@ -55,6 +55,7 @@ FetchContent_Declare(
 
 # option(SDLIMAGE_DEPS_SHARED "Load dependencies dynamically" OFF)
 option(SDLIMAGE_VENDORED "Use vendored third-party libraries" ON)
+option(SDLIMAGE_ANI "Support loading ANI animations" OFF)
 option(SDLIMAGE_AVIF "Support loading AVIF images" OFF)
 option(SDLIMAGE_BMP "Support loading BMP images" OFF)
 option(SDLIMAGE_GIF "Support loading GIF images" OFF)
@@ -63,6 +64,7 @@ option(SDLIMAGE_JXL "Support loading JXL images" OFF)
 option(SDLIMAGE_LBM "Support loading LBM images" OFF)
 option(SDLIMAGE_PCX "Support loading PCX images" OFF)
 option(SDLIMAGE_PNG "Support loading PNG images" ON)
+option(SDLIMAGE_PNG_LIBPNG OFF)
 option(SDLIMAGE_PNM "Support loading PNM images" OFF)
 option(SDLIMAGE_QOI "Support loading QOI images" OFF)
 option(SDLIMAGE_SVG "Support loading SVG images" OFF)
@@ -72,12 +74,14 @@ option(SDLIMAGE_WEBP "Support loading WEBP images" OFF)
 option(SDLIMAGE_XCF "Support loading XCF images" OFF)
 option(SDLIMAGE_XPM "Support loading XPM images" OFF)
 option(SDLIMAGE_XV "Support loading XV images" OFF)
+option(SDLIMAGE_BACKEND_STB "Use stb_image for loading JPEG files" ON)
+option(SDLIMAGE_BACKEND_WIC "Add WIC backend (Windows Imaging Component)" OFF)
 option(SDLIMAGE_BACKEND_IMAGEIO "Use native Mac OS X frameworks for loading images?" OFF)
 
 FetchContent_Declare(
   SDL3_image
   GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
-  GIT_TAG origin/release-3.2.x
+  GIT_TAG origin/release-3.4.x
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
   GIT_SUBMODULES ""
@@ -190,6 +194,7 @@ set(PHYSFS_TARGETNAME_UNINSTALL "physfs-uninstall")
 add_subdirectory(deps/physfs EXCLUDE_FROM_ALL)
 
 ## DBGP
+option(DBGP_BUILD_EXAMPLE "Build example" OFF)
 add_subdirectory(deps/DBGP EXCLUDE_FROM_ALL)
 
 # SETUP SMGF
@@ -207,6 +212,13 @@ if(NOT EMSCRIPTEN)
   )
 
   set(RESOURCE_FILES "${RESOURCE_FILES}" "${CMAKE_CURRENT_BINARY_DIR}/game.smgf")
+endif()
+
+if(ANDROID)
+    # SDL applications need to be built as a shared library
+    function(add_executable TARGET)
+        add_library(${TARGET} SHARED ${ARGN})
+    endfunction()
 endif()
 
 add_executable(SMGF

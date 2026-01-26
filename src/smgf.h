@@ -122,6 +122,7 @@ int smgf_pcall(lua_State* L, int narg, int nres);
 int lua_getsmgf(smgf* const c);
 int lua_getsmgffunc(smgf* const c, const char* fname);
 void lua_api_init(smgf* const c); // initialises a Lua state for smgf use
+double lua_get_memory_kb(lua_State* L);
 
 const char* smgf_strcpy(const char* str);
 
