@@ -739,9 +739,9 @@ tests.system:skip("set_fullscreen", function()
   smgf.system.set_fullscreen(false)
 end)
 
-tests.system:skip("can log", function()
-  smgf.system.log("hello")
-end)
+-- tests.system:skip("can log", function()
+--   smgf.system.log("hello")
+-- end)
 
 tests.system:test("rand", function()
   math.randomseed(42)

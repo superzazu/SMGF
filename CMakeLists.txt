@@ -111,7 +111,7 @@ option(SDLMIXER_AU "Enable AU audio" OFF)
 FetchContent_Declare(
   SDL3_mixer
   GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
-  GIT_TAG origin/main
+  GIT_TAG origin/release-3.2.x
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
   GIT_SUBMODULES "external/ogg;external/vorbis"

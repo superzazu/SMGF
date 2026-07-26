@@ -8,3 +8,6 @@ docs/_build
 docs/tmp
 dist
 todo.md
+
+android-project/local.properties
+android-project/.gradle/

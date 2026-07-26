@@ -219,6 +219,8 @@ Stops the playback of a sound (with optional fade out)
 ---
 ## smgf.conf
 
+A table containing game configuration (this should be the value returned
+ by `conf.lua` file)
 
 ### smgf.conf.application {#smgf.conf.application}
 
@@ -288,16 +290,19 @@ Zoom of the game
 ---
 ## smgf.device_reset
 
+Callback, called on SDL_RENDER_DEVICE_RESET event.
 
 
 ---
 ## smgf.draw
 
+Callback, called every frame after `smgf.update`. All drawing operations should be done here.
 
 
 ---
 ## smgf.focus
 
+Callback, called when the smgf window loses or gains focus.
 
 
 ---
@@ -396,26 +401,38 @@ Rumbles the given gamepad.
 ---
 ## smgf.gamepad_added
 
+Callback, called when a gamepad has been detected. The "player_index" is a number
+ between 1 and 4 to identify the player.
 
 
 ---
 ## smgf.gamepad_axismotion
 
+Callback, called when there has been an axis motion on a gamepad. The "player_index" is a number
+ between 1 and 4 to identify the player. The "axis" parameter can either be
+ "leftx", "lefty", "rightx", "righty", "lefttrigger" or "righttrigger". The "value"
+ parameter is in the range [-1;1].
 
 
 ---
 ## smgf.gamepad_down
 
+Callback, called when a button has been pressed on a gamepad. The "player_index" is a number
+ between 1 and 4 to identify the player.
 
 
 ---
 ## smgf.gamepad_removed
 
+Callback, called when a gamepad has been removed. The "player_index" is a number
+ between 1 and 4 to identify the player.
 
 
 ---
 ## smgf.gamepad_up
 
+Callback, called when a button has been released on a gamepad. The "player_index" is a number
+ between 1 and 4 to identify the player.
 
 
 ---
@@ -786,6 +803,7 @@ Adds "x" and "y" to the drawing origin: all future drawing
 ---
 ## smgf.init
 
+Callback, called once at the start of the program.
 
 
 ---
@@ -868,11 +886,19 @@ type:
 ---
 ## smgf.key_down
 
+Callback, called when a keyboard key is pressed. The "mod" parameter is a table and
+ represent the key modifiers currently pressed: "lshift", "rshift", "lctrl",
+ "rctrl", "lalt", "ralt", "lgui" (Windows key or Command ⌘ on Mac),
+ "rgui", "num", "caps", "mode".
 
 
 ---
 ## smgf.key_up
 
+Callback, called when a keyboard key is released. The "mod" parameter is a table and
+ represent the key modifiers currently pressed: "lshift", "rshift", "lctrl",
+ "rctrl", "lalt", "ralt", "lgui" (Windows key or Command ⌘ on Mac),
+ "rgui", "num", "caps", "mode".
 
 
 ---
@@ -967,21 +993,26 @@ Returns whether a key is pressed. Expects a number: 1 is left button, 2 is
 ---
 ## smgf.mouse_down
 
+Callback, called on mouse press. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
 
 
 ---
 ## smgf.mouse_moved
 
+Callback, called on mouse movement. The first two arguments represent the current
+ mouse position, and the two last represent the actual mouse movement.
 
 
 ---
 ## smgf.mouse_up
 
+Callback, called on mouse release. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
 
 
 ---
 ## smgf.mouse_wheel
 
+Callback, called on mouse wheel movement.
 
 
 ---
@@ -1178,16 +1209,6 @@ Converts a string between encodings.
 
 @*return* `converted` — The converted string
 
-### smgf.system.log {#smgf.system.log}
-
-```lua
-function smgf.system.log(str: string)
-```
-
-Logs a string
-
-@*param* `str` — String to log
-
 ### smgf.system.open_url {#smgf.system.open_url}
 
 ```lua
@@ -1326,26 +1347,31 @@ Waits for a given time (in seconds) before returning to the program.
 ---
 ## smgf.targets_reset
 
+Callback, called on SDL_RENDER_TARGETS_RESET event.
 
 
 ---
 ## smgf.text_input
 
+Callback, called on text input. Needs to be enabled first with "smgf.keyboard.set_textinput".
 
 
 ---
 ## smgf.update
 
+Callback, called every frame before `smgf.draw`. "dt" represents the seconds since the last call to `smgf.update`. All game updates should be done there.
 
 
 ---
 ## SMGFBlendMode
 
+Blend mode.
 
 
 ---
 ## SMGFFile
 
+A file that can be read and/or written to.
 
 ### SMGFFile.close {#SMGFFile.close}
 
@@ -1465,21 +1491,27 @@ Writes a string to a file.
 ---
 ## SMGFKeyMod
 
+A key modifier (such as "shift", "control", "command", etc.)
 
 
 ---
 ## SMGFPlayerIndex
 
+A number between 1 and 4 to identify the player. The first gamepad plugged
+ will be "1", the second "2", the third "3" etc.
 
 
 ---
 ## SMGFQuad
 
+A quadrilateral, used to work on a portion of a texture.
+ Requires 4 elements: x, y, width and height.
 
 
 ---
 ## SMGFSound
 
+A sound that can be played.
 
 ### SMGFSound.clone {#SMGFSound.clone}
 
@@ -1614,6 +1646,7 @@ Stops the playback of a sound (with optional fade out)
 ---
 ## SMGFTexture
 
+A texture that can be draw on screen (or on an offscreen target)
 
 ### SMGFTexture.draw {#SMGFTexture.draw}
 

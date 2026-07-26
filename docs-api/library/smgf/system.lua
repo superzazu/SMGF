@@ -133,4 +133,4 @@ function smgf.system.get_version() end
 
 --- Logs a string
 --- @param str string String to log
-function smgf.system.log(str) end
+-- function smgf.system.log(str) end
