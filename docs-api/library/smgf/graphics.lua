@@ -49,8 +49,8 @@ function Texture:get_blend_mode() end
 function Texture:draw(x, y, scale_x, scale_y, rotation, origin_x, origin_y, flip)
 end
 
---- Saves the texture as a BMP file. Filename must end with ".bmp".
---- @param filename string The filename (must end with ".bmp")
+--- Saves the texture as a PNG file. Filename must end with ".png".
+--- @param filename string The filename (must end with ".png")
 function Texture:save(filename) end
 
 -- @MARK: graphics module
@@ -141,9 +141,9 @@ function smgf.graphics.get_translation() end
 --- @param y number
 function smgf.graphics.set_translation(x, y) end
 
---- Takes a screenshot of the screen and saves it as a BMP. Filename must end
---- with ".bmp".
---- @param filename string The filename (must end with ".bmp")
+--- Takes a screenshot of the screen and saves it as a PNG. Filename must end
+--- with ".png".
+--- @param filename string The filename (must end with ".png")
 function smgf.graphics.screenshot(filename) end
 
 --- @alias SMGFFlip

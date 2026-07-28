@@ -735,10 +735,10 @@ Resets the current graphic state (color, drawing origin, current target).
 function smgf.graphics.screenshot(filename: string)
 ```
 
-Takes a screenshot of the screen and saves it as a BMP. Filename must end
- with ".bmp".
+Takes a screenshot of the screen and saves it as a PNG. Filename must end
+ with ".png".
 
-@*param* `filename` — The filename (must end with ".bmp")
+@*param* `filename` — The filename (must end with ".png")
 
 ### smgf.graphics.set_blend_mode {#smgf.graphics.set_blend_mode}
 
@@ -1731,9 +1731,9 @@ Returns the width of a texture.
 (method) SMGFTexture:save(filename: string)
 ```
 
-Saves the texture as a BMP file. Filename must end with ".bmp".
+Saves the texture as a PNG file. Filename must end with ".png".
 
-@*param* `filename` — The filename (must end with ".bmp")
+@*param* `filename` — The filename (must end with ".png")
 
 ### SMGFTexture.set_blend_mode {#SMGFTexture.set_blend_mode}
 

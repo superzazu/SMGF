@@ -129,9 +129,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   }
 
   if (SDL_strcmp(SDL_GetPlatform(), "macOS") == 0) {
-    // note: on macOS, needs to save in legacy format to be recognised by
-    // Apple apps, including Preview and Finder.
-    SDL_SetHint(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, "1");
+    // // note: on macOS, needs to save in legacy format to be recognised by
+    // // Apple apps, including Preview and Finder.
+    // SDL_SetHint(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, "1");
 
     // avoid renaming some scancodes on macOS
     SDL_SetScancodeName(SDL_SCANCODE_LALT, "Left Alt");

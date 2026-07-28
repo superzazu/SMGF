@@ -50,7 +50,7 @@ end
 ---@type smgf.key_down
 function smgf.key_down(key, mod)
   if key == "s" then
-    smgf.graphics.screenshot("screenshot.bmp")
+    smgf.graphics.screenshot("screenshot.png")
   end
 end
 
