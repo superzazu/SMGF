@@ -262,6 +262,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
   // printf(">> mem (KB):\tdiff: %f\ttotal: %f\n", end_mem - start_mem,
   // end_mem);
 
+  if (c.should_quit) {
+    return SDL_APP_SUCCESS;
+  }
+
   return SDL_APP_CONTINUE;
 }
 
