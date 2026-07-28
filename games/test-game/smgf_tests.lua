@@ -663,7 +663,6 @@ tests.system.afterEach = function()
   smgf.system.set_window_title("SMGF v2.0.0")
   smgf.system.set_dimensions(256, 256)
   smgf.system.set_zoom(1)
-  smgf.system.set_fps(nil)
 end
 
 tests.system:test("can get window width+height", function()
@@ -679,17 +678,6 @@ tests.system:test("can set window width+height", function()
   smgf.system.set_dimensions(300, 310)
   assert_equal(smgf.system.get_width(), 300)
   assert_equal(smgf.system.get_height(), 310)
-end)
-
-tests.system:test("can get fps limit (defaults to nil)", function()
-  assert_equal(smgf.system.get_fps(), nil)
-end)
-
-tests.system:test("can set fps limit", function()
-  smgf.system.set_fps(60)
-  assert_equal(smgf.system.get_fps(), 60)
-  smgf.system.set_fps()
-  assert_equal(smgf.system.get_fps(), nil)
 end)
 
 tests.system:test("can get zoom (defaults to 1)", function()

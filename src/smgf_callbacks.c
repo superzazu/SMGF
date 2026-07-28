@@ -261,7 +261,7 @@ int smgf_lgamepad_removed(smgf* const c, SDL_JoystickID id) {
   for (int i = 0; i < 4; i++) {
     if (c->controllers[i] == id) {
       player_index = i;
-      c->controllers[i] = -1;
+      c->controllers[i] = 0;
       break;
     }
   }

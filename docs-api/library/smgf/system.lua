@@ -69,14 +69,6 @@ function smgf.system.get_width() end
 --- @return number height The height of the screen
 function smgf.system.get_height() end
 
---- Returns the FPS (frames per second) limit of the game.
---- @return number fps FPS limit of the game (0 if FPS limiting is disabled)
-function smgf.system.get_fps() end
-
---- Sets the FPS (frames per second) limit.
---- @param fps number|nil The fps of the screen (or nil to reset limit)
-function smgf.system.set_fps(fps) end
-
 --- Returns the zoom of the game.
 --- @return number zoom Zoom of the game
 function smgf.system.get_zoom() end

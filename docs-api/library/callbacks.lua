@@ -9,21 +9,6 @@
 --- Callback, called every frame after `smgf.update`. All drawing operations should be done here.
 --- @alias smgf.draw fun()
 
---- Callback, called on mouse release. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
---- @see smgf.mouse_down
---- @alias smgf.mouse_up fun(x: number, y: number, button_no: number)
-
---- Callback, called on mouse press. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
---- @see smgf.mouse_up
---- @alias smgf.mouse_down fun(x: number, y: number, button_no: number)
-
---- Callback, called on mouse movement. The first two arguments represent the current
---- mouse position, and the two last represent the actual mouse movement.
---- @alias smgf.mouse_moved fun(x: number, y: number, xdiff: number, ydiff: number)
-
---- Callback, called on mouse wheel movement.
---- @alias smgf.mouse_wheel fun(x: number, y: number)
-
 --- Callback, called when the smgf window loses or gains focus.
 --- @alias smgf.focus fun(focused: boolean)
 
@@ -55,6 +40,21 @@
 
 --- Callback, called on text input. Needs to be enabled first with "smgf.keyboard.set_textinput".
 --- @alias smgf.text_input fun(text: string)
+
+--- Callback, called on mouse release. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
+--- @see smgf.mouse_down
+--- @alias smgf.mouse_up fun(x: number, y: number, button_no: number)
+
+--- Callback, called on mouse press. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
+--- @see smgf.mouse_up
+--- @alias smgf.mouse_down fun(x: number, y: number, button_no: number)
+
+--- Callback, called on mouse movement. The first two arguments represent the current
+--- mouse position, and the two last represent the actual mouse movement.
+--- @alias smgf.mouse_moved fun(x: number, y: number, xdiff: number, ydiff: number)
+
+--- Callback, called on mouse wheel movement.
+--- @alias smgf.mouse_wheel fun(x: number, y: number)
 
 --- A number between 1 and 4 to identify the player. The first gamepad plugged
 --- will be "1", the second "2", the third "3" etc.

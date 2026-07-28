@@ -71,8 +71,6 @@ int sf_sy_get_identity(smgf* const c, const char** org, const char** app);
 const char* sf_sy_get_write_dir(smgf* const c);
 void sf_sy_get_window_size(smgf* const c, int* w, int* h);
 void sf_sy_set_window_size(smgf* const c, int w, int h);
-int sf_sy_get_fps(smgf* const c);
-void sf_sy_set_fps(smgf* const c, int fps);
 float sf_sy_get_zoom(smgf* const c);
 void sf_sy_set_zoom(smgf* const c, float zoom);
 bool sf_sy_get_cursor_visible(smgf* const c);

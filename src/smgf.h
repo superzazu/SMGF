@@ -37,6 +37,8 @@
 #define ZOOM_DEFAULT 1
 #define WINDOW_TITLE_DEFAULT "SMGF v" SMGF_VERSION
 #define CURSOR_VISIBLE_DEFAULT true
+#define UPDATERATE_DEFAULT -1.f
+#define VSYNC_DEFAULT true
 
 #define MAX_NB_GSTATES 64
 
@@ -76,7 +78,9 @@ typedef struct smgf_config {
   int width, height; // of game screen
   int fps; // fps capping for update (defaults to 0 = disabled)
   float zoom; // zoom at startup
+  float update_rate;
   bool cursor_visible;
+  bool vsync;
 } smgf_config;
 
 typedef struct smgf_graphic_state {
@@ -94,7 +98,7 @@ typedef struct smgf {
   MIX_Mixer* mixer;
   stexture* screen_texture;
   int width, height;
-  int fps;
+  float update_rate;
   float zoom;
   const char* application;
   const char* organisation;
@@ -105,6 +109,7 @@ typedef struct smgf {
   bool messagebox_on_error;
   bool mute;
   bool hidden;
+  bool vsync;
 
   smgf_graphic_state* gstates;
   int gstates_ptr;

@@ -21,10 +21,12 @@
 #error SMGF requires SDL 3.4.0 or later.
 #endif
 
+#define MAX_STEPS_PER_ITERATE 5
+
 // main loop variables
-static int start_time = 0;
-static int end_time = 0;
-static int dt = 0;
+static Uint64 start_time = 0;
+static Uint64 end_time = 0;
+static Uint64 accumulator = 0;
 static double start_mem = 0;
 static double end_mem = 0;
 static SDL_FRect dst_rect = {0};
@@ -32,6 +34,7 @@ static smgf c = {0};
 static char* bundled_game_path = NULL;
 static const char* dropped_path = NULL;
 static SDL_IOStream* log_file = NULL;
+// static float display_hz = 60.f;
 
 /** returns file path if a file has been dropped, or NULL. Used for startup.
  * Returned value must be freed by user.
@@ -103,16 +106,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
       SDL_VERSIONNUM_MICRO(linked), SDL_VERSIONNUM_MAJOR(compiled),
       SDL_VERSIONNUM_MINOR(compiled), SDL_VERSIONNUM_MICRO(compiled),
       SDL_REVISION);
+  SDL_Log("using %s", LUA_RELEASE);
 
   if (linked < SDL_VERSIONNUM(3, 4, 0)) {
     SDL_LogErrorC("SMGF requires SDL 3.4.0 or later.");
     return SDL_APP_FAILURE;
   }
-
-  SDL_Log("using %s", LUA_RELEASE);
-
-  SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
-  // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "gpu");
 
   if (SDL_strcmp(SDL_GetPlatform(), "macOS") == 0) {
     // note: on macOS, needs to save in legacy format to be recognised by
@@ -139,10 +138,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 #else
   SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 #endif
-
-  if (!MIX_Init()) {
-    SDL_LogErrorC("Unable to initialise SDL_mixer: %s", SDL_GetError());
-  }
 
   // if a file "game.smgf" is accessible, smgf will auto-start this
   // game. This behaviour allows users to easily package games without
@@ -199,12 +194,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     game_path = bundled_game_path;
   }
 
+  if (!MIX_Init()) {
+    SDL_LogErrorC("Unable to initialise SDL_mixer: %s", SDL_GetError());
+  }
+
   if (PHYSFS_init(argv[0]) == 0) {
     SDL_LogErrorC(
         "Unable to initialise physfs: %s",
         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
     return SDL_APP_FAILURE;
   }
+
+  // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "gpu");
 
   // smgf init (opens conf.lua file)
   if (smgf_init(&c, game_path, hidden, mute) != 0) {
@@ -219,23 +220,51 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   // print info on renderer:
   const char* renderer_name = SDL_GetRendererName(c.renderer);
   int vsync = 0;
-  SDL_GetRenderVSync(c.renderer, &vsync);
-  SDL_Log("using \"%s\" video renderer (vsync: %d)", renderer_name, vsync);
+  bool vsync_res = SDL_GetRenderVSync(c.renderer, &vsync);
+  SDL_Log(
+      "using \"%s\" video renderer (vsync: %s)", renderer_name,
+      vsync_res ? (vsync ? "yes" : "no") : "?");
 
-  smgf_linit(&c);
+  /* const SDL_DisplayMode* mode =
+      SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(c.window));
+  if (mode != NULL && mode->refresh_rate != 0.f) {
+    SDL_Log("screen refresh rate: %f", mode->refresh_rate);
+    display_hz = mode->refresh_rate;
+  } */
+
   SDL_RaiseWindow(c.window);
+  smgf_linit(&c);
+
+  end_time = SDL_GetTicksNS(); // to avoid big dt on first frame
 
   return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
-  start_time = SDL_GetTicks();
-  dt = start_time - end_time;
+  start_time = SDL_GetTicksNS();
+  Uint64 dt = start_time - end_time;
+  start_mem = lua_get_memory_kb(c.L);
 
   // update
-  start_mem = lua_get_memory_kb(c.L);
-  c.dt = dt / 1000.f;
-  smgf_lupdate(&c);
+  if (c.update_rate == -1) {
+    c.dt = dt / (float) SDL_NS_PER_SECOND;
+    smgf_lupdate(&c);
+  } else {
+    const Uint64 step_ns = SDL_NS_PER_SECOND / (Uint64) c.update_rate;
+
+    accumulator += dt;
+    // avoid trying to catch-up after a big stall
+    const Uint64 max_accum = step_ns * MAX_STEPS_PER_ITERATE;
+    if (accumulator > max_accum) {
+      accumulator = max_accum;
+    }
+
+    while (accumulator >= step_ns) {
+      c.dt = step_ns / (float) SDL_NS_PER_SECOND;
+      smgf_lupdate(&c);
+      accumulator -= step_ns;
+    }
+  }
 
   // draw
   SDL_SetRenderTarget(c.renderer, c.screen_texture->tex);
@@ -251,13 +280,14 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
   SDL_RenderPresent(c.renderer);
 
   // wait a little bit before next frame if needed
-  if (c.fps > 0) {
-    const int frame_rate = 1000.f / c.fps;
-    int frame_time = SDL_GetTicks() - start_time;
-    if (frame_time < frame_rate) {
-      SDL_Delay(frame_rate - frame_time);
+  /* if (!c.vsync) {
+    const float rate = (c.update_rate != -1) ? c.update_rate : display_hz;
+    const Uint64 target_ns = (Uint64) (SDL_NS_PER_SECOND / rate);
+    const Uint64 elapsed = SDL_GetTicksNS() - start_time;
+    if (elapsed < target_ns) {
+      SDL_DelayPrecise(target_ns - elapsed);
     }
-  }
+  } */
 
   end_time = start_time;
   end_mem = lua_get_memory_kb(c.L);
@@ -410,3 +440,5 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
   MIX_Quit();
   SDL_Quit();
 }
+
+#undef MAX_STEPS_PER_ITERATE

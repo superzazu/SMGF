@@ -41,28 +41,6 @@ static int l_set_dimensions(lua_State* L) {
   return 0;
 }
 
-static int l_get_fps(lua_State* L) {
-  smgf* const c = get_smgf(L);
-  int fps = sf_sy_get_fps(c);
-  if (fps == 0) {
-    lua_pushnil(L);
-  } else {
-    lua_pushinteger(L, fps);
-  }
-  return 1;
-}
-
-static int l_set_fps(lua_State* L) {
-  smgf* const c = get_smgf(L);
-
-  int fps = luaL_optnumber(L, 1, 0);
-  luaL_argcheck(
-      L, fps >= 0, 1, "must be positive (or nil to disable FPS limiting)");
-
-  sf_sy_set_fps(c, fps);
-  return 0;
-}
-
 static int l_get_zoom(lua_State* L) {
   smgf* const c = get_smgf(L);
   lua_pushnumber(L, sf_sy_get_zoom(c));
@@ -333,8 +311,6 @@ static const struct luaL_Reg smgf_system[] = {
     {"set_dimensions", l_set_dimensions},
     {"get_width", l_get_width},
     {"get_height", l_get_height},
-    {"get_fps", l_get_fps},
-    {"set_fps", l_set_fps},
     {"get_zoom", l_get_zoom},
     {"set_zoom", l_set_zoom},
     {"get_cursor_visible", l_get_cursor_visible},

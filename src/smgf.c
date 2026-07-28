@@ -103,7 +103,8 @@ static int load_config(smgf* c, const char* conf_file_name) {
   c->conf.organisation = NULL;
   c->conf.width = WIDTH_DEFAULT;
   c->conf.height = HEIGHT_DEFAULT;
-  c->conf.fps = FPS_DEFAULT;
+  c->conf.update_rate = UPDATERATE_DEFAULT;
+  c->conf.vsync = VSYNC_DEFAULT;
   c->conf.zoom = ZOOM_DEFAULT;
   c->conf.cursor_visible = CURSOR_VISIBLE_DEFAULT;
 
@@ -154,15 +155,6 @@ static int load_config(smgf* c, const char* conf_file_name) {
   }
   lua_pop(L, 1);
 
-  if (lua_getfield(L, -1, "fps") == LUA_TNUMBER) {
-    c->conf.fps = lua_tonumber(L, -1);
-    if (c->conf.fps < 0) {
-      smgf_set_error(c, "fps in conf.lua must be >= 0");
-      return 1;
-    }
-  }
-  lua_pop(L, 1);
-
   if (lua_getfield(L, -1, "zoom") == LUA_TNUMBER) {
     c->conf.zoom = lua_tonumber(L, -1);
     if (c->conf.zoom < 1) {
@@ -172,8 +164,25 @@ static int load_config(smgf* c, const char* conf_file_name) {
   }
   lua_pop(L, 1);
 
+  if (lua_getfield(L, -1, "update_rate") == LUA_TNUMBER) {
+    c->conf.update_rate = lua_tonumber(L, -1);
+    if (c->conf.update_rate < 1 && c->conf.update_rate != -1) {
+      smgf_set_error(
+          c,
+          "update_rate in conf.lua must be a number (eg 30, 60, 120) or -1 (to "
+          "use variable time step).");
+      return 1;
+    }
+  }
+  lua_pop(L, 1);
+
   if (lua_getfield(L, -1, "cursor_visible") == LUA_TBOOLEAN) {
     c->conf.cursor_visible = lua_toboolean(L, -1);
+  }
+  lua_pop(L, 1);
+
+  if (lua_getfield(L, -1, "vsync") == LUA_TBOOLEAN) {
+    c->conf.vsync = lua_toboolean(L, -1);
   }
   lua_pop(L, 1);
 
@@ -233,7 +242,8 @@ int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute) {
   }
   c->width = c->conf.width;
   c->height = c->conf.height;
-  c->fps = c->conf.fps;
+  c->update_rate = c->conf.update_rate;
+  c->vsync = c->conf.vsync;
   c->zoom = c->conf.zoom;
 
   // opening Lua env
@@ -248,7 +258,7 @@ int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute) {
       c->conf.application ? smgf_strcpy(c->conf.application) : NULL;
   sf_sy_set_identity(c, org, app);
 
-  SDL_memset(c->controllers, -1, sizeof(SDL_JoystickID) * 4);
+  SDL_memset(c->controllers, 0, sizeof(SDL_JoystickID) * 4);
 
   SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
   c->hidden = hidden;
@@ -271,7 +281,7 @@ int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute) {
     SDL_Log("unable to create renderer: %s", SDL_GetError());
     return 1;
   }
-  SDL_SetRenderVSync(c->renderer, true);
+  SDL_SetRenderVSync(c->renderer, c->vsync);
 
   SDL_SetRenderLogicalPresentation(
       c->renderer, c->width, c->height, SDL_LOGICAL_PRESENTATION_LETTERBOX);

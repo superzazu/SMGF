@@ -13,14 +13,6 @@ void sf_sy_set_window_size(smgf* const c, int w, int h) {
   SDL_SetWindowSize(c->window, w * c->zoom, h * c->zoom);
 }
 
-int sf_sy_get_fps(smgf* const c) {
-  return c->fps;
-}
-
-void sf_sy_set_fps(smgf* const c, int fps) {
-  c->fps = fps;
-}
-
 float sf_sy_get_zoom(smgf* const c) {
   return c->zoom;
 }
