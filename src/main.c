@@ -104,8 +104,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
       SDL_VERSIONNUM_MINOR(compiled), SDL_VERSIONNUM_MICRO(compiled),
       SDL_REVISION);
 
-  if (linked < SDL_VERSIONNUM(3, 1, 5)) {
-    SDL_LogErrorC("SMGF requires SDL 3.1.5 or later.");
+  if (linked < SDL_VERSIONNUM(3, 4, 0)) {
+    SDL_LogErrorC("SMGF requires SDL 3.4.0 or later.");
     return SDL_APP_FAILURE;
   }
 
