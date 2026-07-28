@@ -95,16 +95,18 @@ int sf_sy_get_clipboard(smgf* const c, char** text) {
 
 int sf_sy_set_identity(smgf* const c, const char* org, const char* app) {
   // unmount current write dir if exists
-  const char* current_pref_dir =
-      PHYSFS_getPrefDir(c->organisation, c->application);
-  if (current_pref_dir != NULL) {
-    if (PHYSFS_setWriteDir(NULL) == 0) {
-      SDL_SetError(
-          "error unmounting write directory (%s)",
-          PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-      return -1;
-    };
-    PHYSFS_unmount(current_pref_dir);
+  if (c->organisation && c->application) {
+    const char* current_pref_dir =
+        PHYSFS_getPrefDir(c->organisation, c->application);
+    if (current_pref_dir != NULL) {
+      if (PHYSFS_setWriteDir(NULL) == 0) {
+        SDL_SetError(
+            "error unmounting write directory (%s)",
+            PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+        return -1;
+      };
+      PHYSFS_unmount(current_pref_dir);
+    }
   }
 
   if (c->organisation) {

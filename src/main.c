@@ -34,6 +34,12 @@ static smgf c = {0};
 static char* bundled_game_path = NULL;
 static const char* dropped_path = NULL;
 static SDL_IOStream* log_file = NULL;
+/** Used with "--nb-updates=N" parameter. Counts down the number of updates,
+ * and when it arrives at 0, quits the app.
+ * Useful for automation & testing simulation.
+ * Setting this value to -1 disables this functionality.
+ */
+int quit_after_n_updates = -1;
 // static float display_hz = 60.f;
 
 /** returns file path if a file has been dropped, or NULL. Used for startup.
@@ -77,6 +83,15 @@ static void custom_logger(
   fprintf(
       stdout, "%s [SMGF] %s: %s\n", custom_logger_datetime_str,
       SDL_priority_prefixes[priority], message);
+}
+
+// returns the value part of "--opt=value", or NULL if arg isn't that option
+static const char* arg_value(const char* arg, const char* opt) {
+  const size_t len = SDL_strlen(opt);
+  if (SDL_strncmp(arg, opt, len) != 0 || arg[len] != '=') {
+    return NULL;
+  }
+  return arg + len + 1;
 }
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
@@ -158,6 +173,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   bool mute = false;
   bool hidden = false;
 
+  const char* val = NULL;
+
   char* arg_path = NULL;
   for (int i = 1; i < argc; i++) {
     // we ignore "-psn" arguments from macOS Finder
@@ -165,20 +182,36 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     if (SDL_strcmp(SDL_GetPlatform(), "macOS") == 0 &&
         SDL_strncmp(argv[i], "-psn", 4) == 0) {
       continue;
-    }
-
-    if (SDL_strncmp(argv[i], "--mute", 6) == 0) {
+    } else if (SDL_strcmp(argv[i], "--help") == 0) {
+      printf("smgf usage:\n");
+      printf("--help\tdisplays this notice\n");
+      printf(
+          "--mute\tmutes all sound (note: sound is still loaded, decoded & "
+          "played — just muted)\n");
+      printf("--hidden\thides the window\n");
+      printf(
+          "--nb-updates=N\truns the game and after N calls to smgf.update(), "
+          "quits the app.\n");
+      return SDL_APP_SUCCESS;
+      continue;
+    } else if (SDL_strcmp(argv[i], "--mute") == 0) {
       mute = true;
       continue;
-    }
-
-    if (SDL_strncmp(argv[i], "--hidden", 8) == 0) {
+    } else if (SDL_strcmp(argv[i], "--hidden") == 0) {
       hidden = true;
       continue;
+    } else if ((val = arg_value(argv[i], "--nb-updates")) != NULL) {
+      char* end = NULL;
+      const long n = SDL_strtol(val, &end, 10);
+      if (end == val || *end != '\0' || n <= 0) {
+        SDL_LogErrorC("invalid --nb-updates value: \"%s\"", val);
+        return SDL_APP_FAILURE;
+      }
+      quit_after_n_updates = (int) n;
+      continue;
+    } else {
+      arg_path = argv[i];
     }
-
-    arg_path = argv[i];
-    break;
   }
 
   // handle files dropped on app on launch
@@ -249,6 +282,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
   if (c.update_rate == -1) {
     c.dt = dt / (float) SDL_NS_PER_SECOND;
     smgf_lupdate(&c);
+    if (quit_after_n_updates != -1 && --quit_after_n_updates == 0)
+      return SDL_APP_SUCCESS;
   } else {
     const Uint64 step_ns = SDL_NS_PER_SECOND / (Uint64) c.update_rate;
 
@@ -263,6 +298,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
       c.dt = step_ns / (float) SDL_NS_PER_SECOND;
       smgf_lupdate(&c);
       accumulator -= step_ns;
+      if (quit_after_n_updates != -1 && --quit_after_n_updates == 0)
+        return SDL_APP_SUCCESS;
     }
   }
 
@@ -428,8 +465,12 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e) {
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result) {
   smgf_quit(&c);
-  PHYSFS_deinit();
-  SDL_free(bundled_game_path);
+  if (PHYSFS_isInit()) {
+    PHYSFS_deinit();
+  }
+  if (bundled_game_path) {
+    SDL_free(bundled_game_path);
+  }
   if (dropped_path) {
     SDL_free((char*) dropped_path);
   }
