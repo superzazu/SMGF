@@ -240,6 +240,7 @@ int sf_gr_texture_new(smgf* const c, stexture* const t, const char* filename) {
   }
 
   sf_gr_texture_set_blend_mode(t, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureScaleMode(t->tex, SDL_SCALEMODE_PIXELART);
 
   SDL_PropertiesID props = SDL_GetTextureProperties(t->tex);
   if (props == 0) {
@@ -264,7 +265,7 @@ int sf_gr_texture_new_empty(smgf* const c, stexture* const t, int w, int h) {
   }
 
   sf_gr_texture_set_blend_mode(t, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureScaleMode(t->tex, SDL_SCALEMODE_NEAREST);
+  SDL_SetTextureScaleMode(t->tex, SDL_SCALEMODE_PIXELART);
   return 0;
 }
 
