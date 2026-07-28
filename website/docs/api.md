@@ -228,7 +228,7 @@ A table containing game configuration (this should be the value returned
 string?
 ```
 
-Your application/game name
+Your application/game name. Required to be able to mount the "pref path" and write files to player device.
 
 ### smgf.conf.cursor_visible {#smgf.conf.cursor_visible}
 
@@ -236,15 +236,7 @@ Your application/game name
 boolean?
 ```
 
-Whether mouse cursor is visible when hovering game window
-
-### smgf.conf.fps {#smgf.conf.fps}
-
-```lua
-number?
-```
-
-FPS limiting of the game (set to 0 to disable FPS limiting)
+Whether mouse cursor is visible when hovering game window (default: true)
 
 ### smgf.conf.height {#smgf.conf.height}
 
@@ -252,7 +244,7 @@ FPS limiting of the game (set to 0 to disable FPS limiting)
 number?
 ```
 
-Window height in pixels
+Window height in pixels (default: 256)
 
 ### smgf.conf.organisation {#smgf.conf.organisation}
 
@@ -260,7 +252,23 @@ Window height in pixels
 string?
 ```
 
-Your organisation name
+Your organisation name. Required to be able to mount the "pref path" and write files to player device.
+
+### smgf.conf.update_rate {#smgf.conf.update_rate}
+
+```lua
+number?
+```
+
+Represents how often should smgf.update() be called. Can be set to a FPS value (eg 30, 60) for a fixed timestep or -1 for a variable timestep. (default: -1)
+
+### smgf.conf.vsync {#smgf.conf.vsync}
+
+```lua
+boolean?
+```
+
+Vertical synchronisation (default: true)
 
 ### smgf.conf.width {#smgf.conf.width}
 
@@ -268,7 +276,7 @@ Your organisation name
 number?
 ```
 
-Window width in pixels
+Window width in pixels (default: 256)
 
 ### smgf.conf.window_title {#smgf.conf.window_title}
 
@@ -284,7 +292,7 @@ Window title name
 number?
 ```
 
-Zoom of the game
+Zoom of the game (float) (default: 1)
 
 
 ---
@@ -1066,17 +1074,6 @@ Returns the delta time sent to the most recent call of `smgf.update`.
 
 @*return* `dt` — Delta time in seconds
 
-### smgf.system.get_fps {#smgf.system.get_fps}
-
-```lua
-function smgf.system.get_fps()
-  -> fps: number
-```
-
-Returns the FPS (frames per second) limit of the game.
-
-@*return* `fps` — FPS limit of the game (0 if FPS limiting is disabled)
-
 ### smgf.system.get_fullscreen {#smgf.system.get_fullscreen}
 
 ```lua
@@ -1258,16 +1255,6 @@ Sets the dimensions of the screen.
 @*param* `width` — The width of the screen
 
 @*param* `height` — The height of the screen
-
-### smgf.system.set_fps {#smgf.system.set_fps}
-
-```lua
-function smgf.system.set_fps(fps: number|nil)
-```
-
-Sets the FPS (frames per second) limit.
-
-@*param* `fps` — The fps of the screen (or nil to reset limit)
 
 ### smgf.system.set_fullscreen {#smgf.system.set_fullscreen}
 

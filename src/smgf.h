@@ -33,7 +33,6 @@
 // configuration defaults:
 #define WIDTH_DEFAULT 256
 #define HEIGHT_DEFAULT 256
-#define FPS_DEFAULT 0
 #define ZOOM_DEFAULT 1
 #define WINDOW_TITLE_DEFAULT "SMGF v" SMGF_VERSION
 #define CURSOR_VISIBLE_DEFAULT true
@@ -76,7 +75,6 @@ typedef struct smgf_config {
   const char* application; // game identity
   const char* organisation; // game identity
   int width, height; // of game screen
-  int fps; // fps capping for update (defaults to 0 = disabled)
   float zoom; // zoom at startup
   float update_rate;
   bool cursor_visible;

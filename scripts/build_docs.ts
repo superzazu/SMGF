@@ -1,7 +1,7 @@
 /// Deno 2+ script that generates an "api.md" file in Markdown format
 /// from lua-language-server definitions (see docs-api folder)
-/// usage: deno run --allow-run --allow-read --allow-write scripts/build_docs.ts
-import { join } from "jsr:@std/path";
+/// usage: deno run --allow-run=lua-language-server --allow-read --allow-write scripts/build_docs.ts
+import { join } from "jsr:@std/path@1.1.6";
 
 const cwd = Deno.cwd();
 const DOC_DIR_PATH = join(cwd, "docs-api");

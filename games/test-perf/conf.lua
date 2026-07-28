@@ -4,5 +4,5 @@ conf.width = 800
 conf.height = 600
 conf.organisation = "smgf-dev"
 conf.application = "test-perf"
--- conf.fps = 30
+-- conf.update_rate = 30
 return conf
