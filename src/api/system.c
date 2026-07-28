@@ -21,11 +21,11 @@ void sf_sy_set_fps(smgf* const c, int fps) {
   c->fps = fps;
 }
 
-int sf_sy_get_zoom(smgf* const c) {
+float sf_sy_get_zoom(smgf* const c) {
   return c->zoom;
 }
 
-void sf_sy_set_zoom(smgf* const c, int zoom) {
+void sf_sy_set_zoom(smgf* const c, float zoom) {
   if (zoom == c->zoom) {
     return;
   }

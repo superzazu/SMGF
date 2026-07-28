@@ -65,15 +65,15 @@ static int l_set_fps(lua_State* L) {
 
 static int l_get_zoom(lua_State* L) {
   smgf* const c = get_smgf(L);
-  lua_pushinteger(L, sf_sy_get_zoom(c));
+  lua_pushnumber(L, sf_sy_get_zoom(c));
   return 1;
 }
 
 static int l_set_zoom(lua_State* L) {
   smgf* const c = get_smgf(L);
 
-  int zoom = luaL_optnumber(L, 1, 1);
-  luaL_argcheck(L, zoom >= 1, 1, "must be positive (or nil to disable zoom)");
+  float zoom = luaL_optnumber(L, 1, 1);
+  luaL_argcheck(L, zoom > 0, 1, "must be positive (or nil to disable zoom)");
 
   sf_sy_set_zoom(c, zoom);
   return 0;
