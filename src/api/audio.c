@@ -3,6 +3,11 @@
 static int mixer = 0;
 
 void sf_au_set_master_gain(smgf* const c, float vol) {
+  // if muted, do not allow master gain modification
+  if (c->mute) {
+    return;
+  }
+
   MIX_SetMixerGain(c->mixer, vol);
 }
 

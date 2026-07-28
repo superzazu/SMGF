@@ -28,7 +28,7 @@ static int dt = 0;
 static double start_mem = 0;
 static double end_mem = 0;
 static SDL_FRect dst_rect = {0};
-static smgf c;
+static smgf c = {0};
 static char* bundled_game_path = NULL;
 static const char* dropped_path = NULL;
 static SDL_IOStream* log_file = NULL;
@@ -160,12 +160,25 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
       bundled_game_path, bundled_game_path_len, "%s%s", base_path,
       SMGF_AUTOLOAD_FILE);
 
+  bool mute = false;
+  bool hidden = false;
+
   char* arg_path = NULL;
   for (int i = 1; i < argc; i++) {
     // we ignore "-psn" arguments from macOS Finder
     // https://github.com/libsdl-org/SDL/blob/9130f7c377c34cc4a2742202bb42d9332b7d8d7e/test/testdropfile.c#L47
     if (SDL_strcmp(SDL_GetPlatform(), "macOS") == 0 &&
         SDL_strncmp(argv[i], "-psn", 4) == 0) {
+      continue;
+    }
+
+    if (SDL_strncmp(argv[i], "--mute", 6) == 0) {
+      mute = true;
+      continue;
+    }
+
+    if (SDL_strncmp(argv[i], "--hidden", 8) == 0) {
+      hidden = true;
       continue;
     }
 
@@ -194,7 +207,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   }
 
   // smgf init (opens conf.lua file)
-  if (smgf_init(&c, game_path) != 0) {
+  if (smgf_init(&c, game_path, hidden, mute) != 0) {
     return SDL_APP_FAILURE;
   }
 

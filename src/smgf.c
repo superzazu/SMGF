@@ -200,8 +200,9 @@ static int load_config(smgf* c, const char* conf_file_name) {
   return 0;
 }
 
-int smgf_init(smgf* const c, const char* game_folder) {
+int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute) {
   c->should_quit = false;
+  c->messagebox_on_error = false; // @TODO should be parametrable
 
   SDL_AudioSpec spec = {
       .format = SDL_AUDIO_F32,
@@ -249,10 +250,15 @@ int smgf_init(smgf* const c, const char* game_folder) {
 
   SDL_memset(c->controllers, -1, sizeof(SDL_JoystickID) * 4);
 
+  SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+  c->hidden = hidden;
+  if (hidden) {
+    flags |= SDL_WINDOW_HIDDEN;
+  }
+
   // setting up SDL window
   c->window = SDL_CreateWindow(
-      c->conf.window_title, c->width * c->zoom, c->height * c->zoom,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+      c->conf.window_title, c->width * c->zoom, c->height * c->zoom, flags);
   if (c->window == NULL) {
     SDL_Log("unable to create window: %s", SDL_GetError());
     return 1;
@@ -296,6 +302,12 @@ int smgf_init(smgf* const c, const char* game_folder) {
   SDL_SetRenderTarget(c->renderer, c->screen_texture->tex);
   SDL_SetRenderDrawColor(c->renderer, 0, 0, 0, 255);
   SDL_RenderClear(c->renderer);
+
+  c->mute = false;
+  if (mute) {
+    sf_au_set_master_gain(c, 0.f);
+    c->mute = true;
+  }
 
   // loading up main.lua
   char* buffer = PHYSFS_readToBuffer(MAIN_FILE_NAME);
@@ -382,8 +394,11 @@ int smgf_set_error(smgf* const c, const char* fmt, ...) {
   // note: we need to make a copy of "args" to avoid segfault
   char error_message[4096];
   SDL_vsnprintf(error_message, 4096, fmt, args_copy);
-  SDL_ShowSimpleMessageBox(
-      SDL_MESSAGEBOX_ERROR, "SMGF error", error_message, window);
+
+  if (c->messagebox_on_error) {
+    SDL_ShowSimpleMessageBox(
+        SDL_MESSAGEBOX_ERROR, "SMGF error", error_message, window);
+  }
 
   va_end(args);
   va_end(args_copy);

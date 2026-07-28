@@ -102,6 +102,9 @@ typedef struct smgf {
   smgf_config conf;
   bool should_quit;
   bool focused;
+  bool messagebox_on_error;
+  bool mute;
+  bool hidden;
 
   smgf_graphic_state* gstates;
   int gstates_ptr;
@@ -113,7 +116,7 @@ typedef struct smgf {
   DBGP_Font font;
 } smgf;
 
-int smgf_init(smgf* const c, const char* game_folder);
+int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute);
 int smgf_quit(smgf* const c);
 
 smgf* get_smgf(lua_State* L);
