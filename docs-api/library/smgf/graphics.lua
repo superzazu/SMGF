@@ -142,7 +142,8 @@ function smgf.graphics.get_translation() end
 function smgf.graphics.set_translation(x, y) end
 
 --- Takes a screenshot of the screen and saves it as a PNG. Filename must end
---- with ".png".
+--- with ".png". Screenshots are written in the "write directory", which means
+--- game identity must be set beforehand.
 --- @param filename string The filename (must end with ".png")
 function smgf.graphics.screenshot(filename) end
 

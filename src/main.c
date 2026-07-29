@@ -34,7 +34,7 @@ static smgf c = {0};
 static char* bundled_game_path = NULL;
 static const char* dropped_path = NULL;
 static SDL_IOStream* log_file = NULL;
-/** Used with "--nb-updates=N" parameter. Counts down the number of updates,
+/** Used with "--max-updates=N" parameter. Counts down the number of updates,
  * and when it arrives at 0, quits the app.
  * Useful for automation & testing simulation.
  * Setting this value to -1 disables this functionality.
@@ -183,15 +183,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         SDL_strncmp(argv[i], "-psn", 4) == 0) {
       continue;
     } else if (SDL_strcmp(argv[i], "--help") == 0) {
-      printf("smgf usage:\n");
-      printf("--help\tdisplays this notice\n");
+      //
+      printf("usage: smgf [options] [game-path]\n\n");
+      printf("  --help            show this notice and exit\n");
       printf(
-          "--mute\tmutes all sound (note: sound is still loaded, decoded & "
-          "played — just muted)\n");
-      printf("--hidden\thides the window\n");
-      printf(
-          "--nb-updates=N\truns the game and after N calls to smgf.update(), "
-          "quits the app.\n");
+          "  --mute            silence output (audio is still loaded and "
+          "decoded)\n");
+      printf("  --hidden          run without showing the window\n");
+      printf("  --max-updates=N   quit after N calls to smgf.update()\n");
       return SDL_APP_SUCCESS;
       continue;
     } else if (SDL_strcmp(argv[i], "--mute") == 0) {
@@ -200,11 +199,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     } else if (SDL_strcmp(argv[i], "--hidden") == 0) {
       hidden = true;
       continue;
-    } else if ((val = arg_value(argv[i], "--nb-updates")) != NULL) {
+    } else if ((val = arg_value(argv[i], "--max-updates")) != NULL) {
       char* end = NULL;
       const long n = SDL_strtol(val, &end, 10);
       if (end == val || *end != '\0' || n <= 0) {
-        SDL_LogErrorC("invalid --nb-updates value: \"%s\"", val);
+        SDL_LogErrorC("invalid --max-updates value: \"%s\"", val);
         return SDL_APP_FAILURE;
       }
       quit_after_n_updates = (int) n;
@@ -282,8 +281,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
   if (c.update_rate == -1) {
     c.dt = dt / (float) SDL_NS_PER_SECOND;
     smgf_lupdate(&c);
-    if (quit_after_n_updates != -1 && --quit_after_n_updates == 0)
-      return SDL_APP_SUCCESS;
+    if (quit_after_n_updates != -1 && --quit_after_n_updates == 0) {
+      c.should_quit = true;
+    }
   } else {
     const Uint64 step_ns = SDL_NS_PER_SECOND / (Uint64) c.update_rate;
 
@@ -298,8 +298,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
       c.dt = step_ns / (float) SDL_NS_PER_SECOND;
       smgf_lupdate(&c);
       accumulator -= step_ns;
-      if (quit_after_n_updates != -1 && --quit_after_n_updates == 0)
-        return SDL_APP_SUCCESS;
+      if (quit_after_n_updates != -1 && --quit_after_n_updates == 0) {
+        c.should_quit = true;
+        break;
+      }
     }
   }
 

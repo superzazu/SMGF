@@ -736,7 +736,8 @@ function smgf.graphics.screenshot(filename: string)
 ```
 
 Takes a screenshot of the screen and saves it as a PNG. Filename must end
- with ".png".
+ with ".png". Screenshots are written in the "write directory", which means
+ game identity must be set beforehand.
 
 @*param* `filename` — The filename (must end with ".png")
 
