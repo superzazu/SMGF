@@ -10,6 +10,16 @@ A small 2D game framework: an SDL3 application that runs games written in
 sandboxed filesystem. There is no scene graph, no ECS, no physics engine —
 it is an immediate-mode drawing API and a callback loop.
 
+## The API reference — read it before writing code
+
+**`website/docs/api.md`** in the SMGF repo (also published on the website) is
+the complete reference: every function, callback, `conf.lua` field and enum,
+with parameters, return values and defaults. Consult it rather than guessing at
+names. It is generated from the [LuaLS](https://github.com/LuaLS/lua-language-server)
+definitions in `docs-api/`, which you can add as a workspace library to get
+autocomplete and type-checking in an editor. `games/` in the SMGF repo holds
+working example games.
+
 ## Anatomy of a game
 
 A game is a folder with two files at its root:
@@ -35,24 +45,15 @@ function smgf.update(dt) end      -- every frame; dt in seconds
 function smgf.draw() end          -- every frame, after update
 ```
 
-Other callbacks: `focus`, `key_down`/`key_up` (`key`, `mod`), `text_input`,
+There is no player-settings layer: **every `conf.lua` field is a developer
+decision**, fixed when you ship. Nothing in it is meant to be surfaced as an
+options menu.
+
+All callbacks are optional. Besides the three above: `focus`,
+`key_down`/`key_up`, `text_input`,
 `mouse_down`/`mouse_up`/`mouse_moved`/`mouse_wheel`,
 `gamepad_added`/`gamepad_removed`/`gamepad_down`/`gamepad_up`/`gamepad_axismotion`,
-`targets_reset`, `device_reset`. All are optional. Full signatures are in
-`docs-api/library/callbacks.lua`.
-
-## Documentation — read this before writing code
-
-- **`website/docs/api.md`** — the complete API reference. **This is the most
-  important file**: it lists every function with parameters and return values.
-  Consult it rather than guessing at function names.
-- `website/docs/getting-started.md`, `tutorials.md`, `examples.md` — prose docs.
-- **`docs-api/`** — [LuaLS](https://github.com/LuaLS/lua-language-server)
-  definitions, usable for autocomplete and type-checking. Useful for exact
-  field lists that read awkwardly in prose — e.g. `docs-api/library/smgf.lua`
-  holds every `conf.lua` field (`update_rate`, `vsync`, `zoom`, …) with its
-  default.
-- `games/` in the SMGF repo — working example games.
+`targets_reset`, `device_reset`.
 
 ## Running a game
 
@@ -60,51 +61,36 @@ Other callbacks: `focus`, `key_down`/`key_up` (`key`, `mod`), `text_input`,
 <path-to-SMGF-binary> <path-to-game-folder>
 ```
 
-CLI flags (from `--help`):
-
-| flag | effect |
-|---|---|
-| `--help` | print usage and exit |
-| `--mute` | silence output (audio is still loaded and decoded) |
-| `--hidden` | run without showing the window |
-| `--max-updates=N` | quit after N calls to `smgf.update()` |
-
-`--hidden`, `--mute` and `--max-updates=N` together give a deterministic,
-non-interactive run — the right way to script a test or a screenshot capture
-instead of launching the game and killing it after a `sleep`.
+`--hidden`, `--mute` and `--max-updates=N` (quit after N calls to
+`smgf.update()`) together give a deterministic, non-interactive run — the right
+way to script a test or a screenshot capture, instead of launching the game and
+killing it after a `sleep`. `--help` lists every flag.
 
 ## Timing: `update_rate` and `vsync`
 
-Both are `conf.lua` fields, both are **developer** decisions, not player settings.
+`update_rate = -1` (the default) is a **variable timestep**: `dt` is the real
+elapsed time. A value like `30` or `60` is a **fixed timestep**, where `dt` is
+always exactly `1/update_rate` — use it when simulation must be reproducible.
 
-- `update_rate = -1` (default) — **variable timestep**: `smgf.update(dt)` is
-  called once per frame with the real elapsed time.
-- `update_rate = 30` / `60` — **fixed timestep**: `dt` is always exactly
-  `1/update_rate`. Use this when simulation must be reproducible.
-- `vsync = true` (default) — leave it on. It paces the loop and prevents
-  tearing. Under a **fixed** timestep, disabling it does *not* change how often
-  `smgf.update` runs — the accumulator is driven by real elapsed time — but
-  `smgf.draw` and the present then run unthrottled, thousands of times a
-  second, re-presenting identical frames and burning CPU/GPU for nothing.
-  Under a **variable** timestep, disabling it uncaps both. There is no reason
-  to turn it off in a shipped game.
+Leave `vsync = true`. Under a **fixed** timestep, disabling it does *not*
+change how often `smgf.update` runs — the accumulator is driven by real elapsed
+time — but `smgf.draw` and the present then run unthrottled, thousands of times
+a second, re-presenting identical frames and burning CPU/GPU for nothing. Under
+a **variable** timestep it uncaps both. There is no reason to turn it off in a
+shipped game.
 
 ## The filesystem is sandboxed — this trips people up
 
-SMGF runs Lua through PhysicsFS, and standard Lua file access is **removed**:
+SMGF runs Lua through PhysicsFS, and standard Lua file access is **removed**.
+`dofile` and `loadfile` are `nil`, as is most of `io` (`open`, `read`, `lines`,
+`close`, `input`, `output`, `popen`, `type`, `stdin`, `tmpfile`) and part of
+`os` (`execute`, `exit`, `getenv`, `remove`, `rename`, `setlocale`, `tmpname`).
+Only `io.write`, `io.flush`, `io.stdout` and `io.stderr` survive.
+`package.cpath` is empty and the C-library loaders are removed — no native
+modules.
 
-- `dofile` and `loadfile` are `nil`.
-- `io.open`, `io.read`, `io.lines`, `io.close`, `io.input`, `io.output`,
-  `io.popen`, `io.type`, `io.stdin`, `io.tmpfile` are all `nil`.
-  (`io.write`, `io.flush`, `io.stdout`, `io.stderr` survive.)
-- `os.execute`, `os.exit`, `os.getenv`, `os.remove`, `os.rename`,
-  `os.setlocale`, `os.tmpname` are `nil`.
-- `package.cpath` is empty and the C-library loaders are removed — no native
-  modules.
-
-**Use `smgf.io.*` for all file access** (`open`, `exists`, `mkdir`, `delete`,
-`type`). Paths are virtual and relative to the game root — `"assets/hero.png"`,
-never an absolute host path.
+**Use `smgf.io.*` for all file access.** Paths are virtual and relative to the
+game root — `"assets/hero.png"`, never an absolute host path.
 
 `require` **does** work (`require "src.world"`): SMGF installs a PhysicsFS
 searcher, with `package.path = "./?.lua;./?/init.lua"` resolved from the game
@@ -114,18 +100,14 @@ root. Prefer it for splitting a game into modules.
 
 To write anything, `conf.lua` must set **both** `organisation` and
 `application`. SMGF then creates a per-user directory (via
-`PHYSFS_getPrefDir`), mounts it, and makes it the **write directory**.
-`smgf.system.get_write_dir()` returns its host path, or `nil` if identity was
-never set — so writes silently have nowhere to go without those two fields.
+`PHYSFS_getPrefDir`), mounts it, and makes it the **write directory**. Without
+those two fields, writes silently have nowhere to go and
+`smgf.system.get_write_dir()` returns `nil`.
 
-Two consequences worth knowing:
-
-- The pref path is **prepended** to the search path, so it takes priority over
-  the game folder. A file written to the pref dir **shadows** a same-named file
-  shipped with the game — which is exactly what you want for save files.
-- Therefore `smgf.io.exists("assets/font.png")` is true for shipped assets
-  *and* `smgf.io.exists("save.dat")` is true for written files; reads search
-  both locations, writes always land in the pref dir.
+The pref path is **prepended** to the search path, so it takes priority over
+the game folder: a file written there **shadows** a same-named file shipped
+with the game, which is exactly what you want for save files. Reads search both
+locations; writes always land in the pref dir.
 
 ## Asset formats
 
