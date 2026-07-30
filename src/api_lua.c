@@ -54,42 +54,63 @@ int l_smgf_searcher(lua_State* L) {
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "path");
   const char* packagepath = luaL_checkstring(L, -1);
+  lua_pop(L, 2);
 
   // finding a file matching the module name
   const char* file_name =
       searchpath(L, mod_name, packagepath, LUA_PATH_SEP, "/");
 
   if (file_name == NULL) {
-    return luaL_error(
-        L, "module '%s' not found in smgf game folders.", mod_name);
+    lua_pushfstring(L, "module '%s' not found.", mod_name);
+    return 1;
   }
 
   // loading file
   PHYSFS_file* file = PHYSFS_openRead(file_name);
 
   if (file == NULL) {
-    int error_code = PHYSFS_getLastErrorCode();
-    return luaL_error(
-        L, "error opening file '%s': %s (%d)", file_name,
-        PHYSFS_getErrorByCode(error_code), error_code);
+    lua_pushfstring(
+        L, "error opening '%s': %s", file_name,
+        PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+    return 1;
   }
 
-  int file_len = PHYSFS_fileLength(file);
+  PHYSFS_sint64 file_len = PHYSFS_fileLength(file);
+  if (file_len <= 0 || file_len > SIZE_MAX) {
+    PHYSFS_close(file);
+    lua_pushfstring(L, "invalid file size '%s'", file_name);
+    return 1;
+  }
 
-  char* file_contents = SDL_calloc(file_len, sizeof(char));
+  // +1 not needed, but in the case where we debug print this value
+  // we'll have a \0 character at the end
+  char* file_contents = SDL_calloc(file_len + 1, 1);
+  if (!file_contents) {
+    PHYSFS_close(file);
+    lua_pushstring(L, "out of memory");
+    return 1;
+  }
+
   if (PHYSFS_readBytes(file, file_contents, file_len) != file_len) {
-    int error_code = PHYSFS_getLastErrorCode();
-    return luaL_error(
-        L, "error reading file '%s': %s (%d)", file_name,
-        PHYSFS_getErrorByCode(error_code), error_code);
+    SDL_free(file_contents);
+    PHYSFS_close(file);
+    lua_pushfstring(
+        L, "error reading '%s': %s", file_name,
+        PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+    return 1;
   }
+
+  PHYSFS_close(file);
 
   // loading Lua string
-  luaL_loadbuffer(L, file_contents, file_len, mod_name);
-  lua_pushstring(L, mod_name);
+  if (luaL_loadbuffer(L, file_contents, (size_t) file_len, file_name) !=
+      LUA_OK) {
+    SDL_free(file_contents);
+    return lua_error(L); // compilation error already on stack
+  }
 
   SDL_free(file_contents);
-  PHYSFS_close(file);
+  lua_pushstring(L, mod_name);
 
   return 2;
 }
