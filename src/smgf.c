@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "SDL_DBGP_unscii16.h"
 
 #include "smgf.h"
@@ -97,7 +98,7 @@ const char* smgf_strcpy(const char* str) {
 
 // loads a smgf config file in a separated Lua state. If the file does not
 // exists, sets the values to smgf defaults
-static int load_config(smgf* c, const char* conf_file_name) {
+static int load_config(smgf* c) {
   c->conf.window_title = WINDOW_TITLE_DEFAULT;
   c->conf.application = NULL;
   c->conf.organisation = NULL;
@@ -108,19 +109,20 @@ static int load_config(smgf* c, const char* conf_file_name) {
   c->conf.zoom = ZOOM_DEFAULT;
   c->conf.cursor_visible = CURSOR_VISIBLE_DEFAULT;
 
-  if (!PHYSFS_exists(conf_file_name)) {
-    SDL_LogInfoC("cannot find %s, skipping...", conf_file_name);
+  if (!PHYSFS_exists(CONF_FILE_NAME)) {
+    SDL_LogInfoC("cannot find %s, skipping...", CONF_FILE_NAME);
     return 0;
   }
 
   lua_State* L = luaL_newstate();
 
-  char* buffer = PHYSFS_readToBuffer(conf_file_name);
+  char* buffer = PHYSFS_readToBuffer(CONF_FILE_NAME);
   if (buffer == NULL) {
     return 1;
   }
 
-  if (luaC_loadstring(L, buffer, conf_file_name)) {
+  // the "@" prefix tells Lua the chunk comes from a file
+  if (luaC_loadstring(L, buffer, "@" CONF_FILE_NAME)) {
     smgf_set_error(c, "%s", lua_tostring(L, -1));
     SDL_free(buffer);
     return 1;
@@ -237,7 +239,7 @@ int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute) {
   SDL_Log("mounted %s to %s", game_folder, PHYSFS_getMountPoint(game_folder));
 
   // load conf or populate with default values if needed
-  if (load_config(c, CONF_FILE_NAME) != 0) {
+  if (load_config(c) != 0) {
     return 1;
   }
   c->width = c->conf.width;
@@ -326,7 +328,8 @@ int smgf_init(smgf* const c, const char* game_folder, bool hidden, bool mute) {
     return 1;
   }
 
-  if (luaC_loadstring(c->L, buffer, MAIN_FILE_NAME)) {
+  // the "@" prefix tells Lua the chunk comes from a file
+  if (luaC_loadstring(c->L, buffer, "@" MAIN_FILE_NAME)) {
     smgf_set_error(c, "%s", lua_tostring(c->L, -1));
     SDL_free(buffer);
     return 1;
