@@ -7,9 +7,6 @@
 #define SMGF_TYPE_SOUND "smgf.sound"
 #define SMGF_TYPE_FILE "smgf.file"
 
-const char* searchpath(
-    lua_State* L, const char* name, const char* path, const char* sep,
-    const char* dirsep);
 int l_smgf_searcher(lua_State* L);
 // void luaapi_init(smgf* const c);
 
