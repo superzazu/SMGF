@@ -5,8 +5,6 @@ sidebar_position: 5
 
 ## smgf
 
-
-
 ```lua
 smgf
 ```
@@ -14,7 +12,6 @@ smgf
 
 ---
 ## smgf.audio
-
 
 ### smgf.audio.clone {#smgf.audio.clone}
 
@@ -298,11 +295,19 @@ Zoom of the game (float) (default: 1)
 ---
 ## smgf.device_reset
 
+```lua
+fun()
+```
+
 Callback, called on SDL_RENDER_DEVICE_RESET event.
 
 
 ---
 ## smgf.draw
+
+```lua
+fun()
+```
 
 Callback, called every frame after `smgf.update`. All drawing operations should be done here.
 
@@ -310,12 +315,15 @@ Callback, called every frame after `smgf.update`. All drawing operations should 
 ---
 ## smgf.focus
 
+```lua
+fun(focused: boolean)
+```
+
 Callback, called when the smgf window loses or gains focus.
 
 
 ---
 ## smgf.gamepad
-
 
 ### smgf.gamepad.get_axis {#smgf.gamepad.get_axis}
 
@@ -409,12 +417,20 @@ Rumbles the given gamepad.
 ---
 ## smgf.gamepad_added
 
+```lua
+fun(player_index: SMGFPlayerIndex)
+```
+
 Callback, called when a gamepad has been detected. The "player_index" is a number
  between 1 and 4 to identify the player.
 
 
 ---
 ## smgf.gamepad_axismotion
+
+```lua
+fun(player_index: SMGFPlayerIndex, axis: SMGFGamepadAxis, value: number)
+```
 
 Callback, called when there has been an axis motion on a gamepad. The "player_index" is a number
  between 1 and 4 to identify the player. The "axis" parameter can either be
@@ -425,12 +441,20 @@ Callback, called when there has been an axis motion on a gamepad. The "player_in
 ---
 ## smgf.gamepad_down
 
+```lua
+fun(player_index: SMGFPlayerIndex, button_no: SMGFGamepadButton)
+```
+
 Callback, called when a button has been pressed on a gamepad. The "player_index" is a number
  between 1 and 4 to identify the player.
 
 
 ---
 ## smgf.gamepad_removed
+
+```lua
+fun(player_index: SMGFPlayerIndex)
+```
 
 Callback, called when a gamepad has been removed. The "player_index" is a number
  between 1 and 4 to identify the player.
@@ -439,13 +463,16 @@ Callback, called when a gamepad has been removed. The "player_index" is a number
 ---
 ## smgf.gamepad_up
 
+```lua
+fun(player_index: SMGFPlayerIndex, button_no: SMGFGamepadButton)
+```
+
 Callback, called when a button has been released on a gamepad. The "player_index" is a number
  between 1 and 4 to identify the player.
 
 
 ---
 ## smgf.graphics
-
 
 ### smgf.graphics.clear {#smgf.graphics.clear}
 
@@ -812,12 +839,15 @@ Adds "x" and "y" to the drawing origin: all future drawing
 ---
 ## smgf.init
 
+```lua
+fun()
+```
+
 Callback, called once at the start of the program.
 
 
 ---
 ## smgf.io
-
 
 ### smgf.io.delete {#smgf.io.delete}
 
@@ -895,6 +925,10 @@ type:
 ---
 ## smgf.key_down
 
+```lua
+fun(key: string, mod: SMGFKeyMod[])
+```
+
 Callback, called when a keyboard key is pressed. The "mod" parameter is a table and
  represent the key modifiers currently pressed: "lshift", "rshift", "lctrl",
  "rctrl", "lalt", "ralt", "lgui" (Windows key or Command ⌘ on Mac),
@@ -904,6 +938,10 @@ Callback, called when a keyboard key is pressed. The "mod" parameter is a table 
 ---
 ## smgf.key_up
 
+```lua
+fun(key: string, mod: SMGFKeyMod[])
+```
+
 Callback, called when a keyboard key is released. The "mod" parameter is a table and
  represent the key modifiers currently pressed: "lshift", "rshift", "lctrl",
  "rctrl", "lalt", "ralt", "lgui" (Windows key or Command ⌘ on Mac),
@@ -912,7 +950,6 @@ Callback, called when a keyboard key is released. The "mod" parameter is a table
 
 ---
 ## smgf.keyboard
-
 
 ### smgf.keyboard.get_textinput {#smgf.keyboard.get_textinput}
 
@@ -955,7 +992,6 @@ Enables or disables Unicode text input events. This function controls
 
 ---
 ## smgf.mouse
-
 
 ### smgf.mouse.get_pos {#smgf.mouse.get_pos}
 
@@ -1002,11 +1038,19 @@ Returns whether a key is pressed. Expects a number: 1 is left button, 2 is
 ---
 ## smgf.mouse_down
 
+```lua
+fun(x: number, y: number, button_no: number)
+```
+
 Callback, called on mouse press. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
 
 
 ---
 ## smgf.mouse_moved
+
+```lua
+fun(x: number, y: number, xdiff: number, ydiff: number)
+```
 
 Callback, called on mouse movement. The first two arguments represent the current
  mouse position, and the two last represent the actual mouse movement.
@@ -1015,18 +1059,25 @@ Callback, called on mouse movement. The first two arguments represent the curren
 ---
 ## smgf.mouse_up
 
+```lua
+fun(x: number, y: number, button_no: number)
+```
+
 Callback, called on mouse release. The button number can be either 1 (left button), 2 (middle button) or 3 (right button).
 
 
 ---
 ## smgf.mouse_wheel
 
+```lua
+fun(x: number, y: number)
+```
+
 Callback, called on mouse wheel movement.
 
 
 ---
 ## smgf.system
-
 
 ### smgf.system.get_clipboard {#smgf.system.get_clipboard}
 
@@ -1335,11 +1386,19 @@ Waits for a given time (in seconds) before returning to the program.
 ---
 ## smgf.targets_reset
 
+```lua
+fun()
+```
+
 Callback, called on SDL_RENDER_TARGETS_RESET event.
 
 
 ---
 ## smgf.text_input
+
+```lua
+fun(text: string)
+```
 
 Callback, called on text input. Needs to be enabled first with "smgf.keyboard.set_textinput".
 
@@ -1347,11 +1406,23 @@ Callback, called on text input. Needs to be enabled first with "smgf.keyboard.se
 ---
 ## smgf.update
 
+```lua
+fun(dt: number)
+```
+
 Callback, called every frame before `smgf.draw`. "dt" represents the seconds since the last call to `smgf.update`. All game updates should be done there.
 
 
 ---
 ## SMGFBlendMode
+
+```lua
+| "none"
+| "blend"
+| "add"
+| "mod"
+| "mul"
+```
 
 Blend mode.
 
@@ -1464,20 +1535,70 @@ Writes a string to a file.
 ---
 ## SMGFFlip
 
+```lua
+| "none"
+| "horizontal"
+| "vertical"
+```
 
 
 ---
 ## SMGFGamepadAxis
 
+```lua
+| "leftx"
+| "lefty"
+| "rightx"
+| "righty"
+| "lefttrigger"
+| "righttrigger"
+```
 
 
 ---
 ## SMGFGamepadButton
 
+```lua
+| "a"
+| "b"
+| "x"
+| "y"
+| "back"
+| "guide"
+| "start"
+| "leftstick"
+| "rightstick"
+| "leftshoulder"
+| "rightshoulder"
+| "dpup"
+| "dpdown"
+| "dpleft"
+| "dpright"
+| "misc1"
+| "paddle1"
+| "paddle2"
+| "paddle3"
+| "paddle4"
+| "touchpad"
+```
 
 
 ---
 ## SMGFKeyMod
+
+```lua
+| "lshift"
+| "rshift"
+| "lctrl"
+| "rctrl"
+| "lalt"
+| "ralt"
+| "lgui"
+| "rgui"
+| "num"
+| "caps"
+| "mode"
+```
 
 A key modifier (such as "shift", "control", "command", etc.)
 
@@ -1485,12 +1606,20 @@ A key modifier (such as "shift", "control", "command", etc.)
 ---
 ## SMGFPlayerIndex
 
+```lua
+number
+```
+
 A number between 1 and 4 to identify the player. The first gamepad plugged
  will be "1", the second "2", the third "3" etc.
 
 
 ---
 ## SMGFQuad
+
+```lua
+number[]
+```
 
 A quadrilateral, used to work on a portion of a texture.
  Requires 4 elements: x, y, width and height.

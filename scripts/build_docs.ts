@@ -57,6 +57,58 @@ docJson.sort(
 const linksRe = /\[([^\[\]]*)\]\((.*?)\)/gm;
 const moduleRegex = /^smgf\.(\w*)$/;
 const functionRegex = /^smgf\.(\w*)\.(\w*)$/;
+/** Regex matching the leading "---" of a LuaDoc continuation line */
+const luaDocPrefixRe = /^\s*---\s?/;
+
+/** Definition files, split into lines, keyed by their path relative to "docs-api" */
+const sourceLines = new Map<string, string[]>();
+
+const readSourceLines = (file: string): string[] => {
+  let lines = sourceLines.get(file);
+  if (!lines) {
+    lines = Deno.readTextFileSync(join(DOC_DIR_PATH, file)).split("\n");
+    sourceLines.set(file, lines);
+  }
+  return lines;
+};
+
+/**
+ * Returns the type an "@alias" expands to — `fun(dt: number)` for
+ * `--- @alias smgf.update fun(dt: number)`.
+ *
+ * "lua-language-server" does not export it: a "doc.alias" define has no
+ * "extends" field, only the position of its definition, so we read it back
+ * from the source. Positions are 0-based and start on the alias name.
+ */
+// deno-lint-ignore no-explicit-any
+const getAliasView = (jsonDefine: any): string | undefined => {
+  const [startLine, startCol] = jsonDefine["start"] as number[];
+  const [finishLine, finishCol] = jsonDefine["finish"] as number[];
+  const lines = readSourceLines(jsonDefine["file"]);
+  if (finishLine >= lines.length || finishLine < startLine) {
+    return undefined;
+  }
+
+  const view = lines
+    .slice(startLine, finishLine + 1)
+    .map((line, index) =>
+      line.slice(
+        index === 0 ? startCol : 0,
+        startLine + index === finishLine ? finishCol : undefined,
+      )
+    )
+    // the first line starts on the alias name, which is already the heading;
+    // the continuation lines of a multi-line alias keep their "---" prefix
+    .map((line, index) =>
+      index === 0
+        ? line.slice(jsonDefine["view"].length)
+        : line.replace(luaDocPrefixRe, "")
+    )
+    .join("\n")
+    .trim();
+
+  return view.length > 0 ? view : undefined;
+};
 
 let markdownContent = "";
 
@@ -87,11 +139,24 @@ for (const jsonClass of docJson) {
 
   markdownContent += `## ${jsonClass["name"]}\n`;
   markdownContent += "\n";
+
+  // deno-lint-ignore no-explicit-any
+  const defines = jsonClass["defines"] as any[];
+  for (const jsonDefine of defines) {
+    const view = jsonDefine["type"] === "doc.alias"
+      ? getAliasView(jsonDefine)
+      : jsonDefine["extends"]?.["view"];
+
+    if (view) {
+      markdownContent += `\`\`\`lua\n${view}\n\`\`\`\n`;
+      markdownContent += "\n";
+    }
+  }
+
   if ("desc" in jsonClass) {
     markdownContent += jsonClass["desc"].trim();
-    markdownContent += "\n";
+    markdownContent += "\n\n";
   }
-  markdownContent += "\n";
 
   // deno-lint-ignore no-explicit-any
   const fields = (jsonClass["fields"] ?? []) as any[];
@@ -113,18 +178,6 @@ for (const jsonClass of docJson) {
       markdownContent += "\n";
     }
     markdownContent += "\n";
-  }
-
-  // deno-lint-ignore no-explicit-any
-  const defines = jsonClass["defines"] as any[];
-  for (const jsonDefine of defines) {
-    const desc = jsonDefine.extends?.view;
-
-    if (desc) {
-      markdownContent += "\n";
-      markdownContent += `\`\`\`lua\n${desc}\n\`\`\`\n`;
-      markdownContent += "\n";
-    }
   }
 
   markdownContent += "\n---\n";
