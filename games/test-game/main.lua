@@ -5,12 +5,25 @@ local test_suites = require "smgf_tests"
 local success = true
 
 local run_tests = function()
+  local nbTests = 0
+  local nbTestsFailed = 0
+
   for _, suite in pairs(test_suites) do
     local run = uunit.run(suite)
     if run.nbTestsFailed > 0 then
       success = false
     end
+    nbTests = nbTests + run.nbTestsExecuted
+    nbTestsFailed = nbTestsFailed + run.nbTestsFailed
     print()
+  end
+
+  local nbTestsPassed = nbTests - nbTestsFailed
+  print()
+  if nbTestsPassed == nbTests then
+    print("TESTS PASSED: ALL")
+  else
+    print("TESTS PASSED: " .. nbTestsPassed .. "/" .. nbTests)
   end
 end
 
@@ -39,7 +52,7 @@ function smgf.key_down(key, mod)
   if key == "return" or key == "escape" then
     smgf.system.quit()
   end
-  if key == 'r' then
+  if key == "r" then
     run_tests()
   end
 end
