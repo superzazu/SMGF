@@ -19,12 +19,7 @@ local run_tests = function()
   end
 
   local nbTestsPassed = nbTests - nbTestsFailed
-  print()
-  if nbTestsPassed == nbTests then
-    print("TESTS PASSED: ALL")
-  else
-    print("TESTS PASSED: " .. nbTestsPassed .. "/" .. nbTests)
-  end
+  print("\nTESTS PASSED: " .. nbTestsPassed .. "/" .. nbTests)
 end
 
 ---@type smgf.init
