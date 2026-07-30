@@ -11,3 +11,6 @@ todo.md
 
 android-project/local.properties
 android-project/.gradle/
+
+# @TODO: not ready, so not commited. Remove next line when ready:
+android-project
