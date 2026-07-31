@@ -57,19 +57,6 @@
  * Copyright (C) 2020 Oliver Nightingale
  */
 
-/*! Bundled license information:
-
-prismjs/prism.js:
-  (**
-   * Prism: Lightweight, robust, elegant syntax highlighting
-   *
-   * @license MIT <https://opensource.org/licenses/MIT>
-   * @author Lea Verou <https://lea.verou.me>
-   * @namespace
-   * @public
-   *)
-*/
-
 /*!***************************************************
 * mark.js v8.11.1
 * https://markjs.io/
@@ -78,10 +65,16 @@ prismjs/prism.js:
 *****************************************************/
 
 /**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/**
  * @license React
- * react-dom.production.min.js
+ * react-dom-client.production.js
  *
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -89,19 +82,9 @@ prismjs/prism.js:
 
 /**
  * @license React
- * react-jsx-runtime.production.min.js
+ * react-dom.production.js
  *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @license React
- * react.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -109,9 +92,29 @@ prismjs/prism.js:
 
 /**
  * @license React
- * scheduler.production.min.js
+ * react-jsx-runtime.production.js
  *
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * scheduler.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
