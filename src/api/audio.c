@@ -21,31 +21,44 @@ void sf_au_set_master_pause(smgf* const c, int paused) {
   }
 }
 
+static int sound_new_failed(smgf* const c, ssound* const s) {
+  sf_au_sound_del(c, s);
+  return -1;
+}
+
 int sf_au_sound_new(
     smgf* const c, ssound* const s, const char* filename, int predecoded) {
-  s->filename = filename;
+  s->filename = NULL;
   s->predecoded = predecoded;
   s->rw = NULL;
   s->snd = NULL;
   s->track = NULL;
 
-  s->rw = PHYSFSSDL3_openRead(filename);
+  // the sound must own its filename: sf_au_sound_clone re-opens the file by
+  // name, and the caller's string is a Lua string that may be collected long
+  // before then
+  s->filename = SDL_strdup(filename);
+  if (s->filename == NULL) {
+    return sound_new_failed(c, s);
+  }
+
+  s->rw = PHYSFSSDL3_openRead(s->filename);
   if (s->rw == NULL) {
-    return -1;
+    return sound_new_failed(c, s);
   }
 
   s->snd = MIX_LoadAudio_IO(c->mixer, s->rw, predecoded, false);
   if (s->snd == NULL) {
-    return -1;
+    return sound_new_failed(c, s);
   }
 
   s->track = MIX_CreateTrack(c->mixer);
   if (s->track == NULL) {
-    return -1;
+    return sound_new_failed(c, s);
   }
 
   if (!MIX_SetTrackAudio(s->track, s->snd)) {
-    return -1;
+    return sound_new_failed(c, s);
   }
 
   return 0;
@@ -58,9 +71,15 @@ void sf_au_sound_del(smgf* const c, ssound* const s) {
   }
   if (s->snd != NULL) {
     MIX_DestroyAudio(s->snd);
-    SDL_CloseIO(s->rw);
     s->snd = NULL;
+  }
+  if (s->rw != NULL) {
+    SDL_CloseIO(s->rw);
     s->rw = NULL;
+  }
+  if (s->filename != NULL) {
+    SDL_free(s->filename);
+    s->filename = NULL;
   }
 }
 

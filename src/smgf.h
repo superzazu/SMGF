@@ -57,7 +57,7 @@ typedef struct stexture {
 } stexture;
 
 typedef struct ssound {
-  const char* filename;
+  char* filename;
   bool predecoded;
   SDL_IOStream* rw;
   MIX_Audio* snd;

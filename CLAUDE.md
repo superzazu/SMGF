@@ -164,6 +164,12 @@ typecheck`). Prose docs are the other files in `website/docs/`.
 - Use the SDL allocators and string functions (`SDL_calloc`/`SDL_free`,
   `SDL_strlen`, `SDL_snprintf`) rather than libc ones, and the `SDL_Log*C`
   macros from [src/smgf.h](src/smgf.h) for application-category logging.
+- **No `goto`.** Not even the `goto fail;` cleanup idiom that is common in
+  C codebases — there are currently zero in `src/`, and that is worth keeping.
+  A constructor that has to release what it already acquired should call a
+  small `static` cleanup helper that returns the error code, so each failure
+  site stays a plain `return`: see `sound_new_failed` in
+  [src/api/audio.c](src/api/audio.c).
 - Configuration defaults live as `*_DEFAULT` macros in [src/smgf.h](src/smgf.h); a new
   `conf.lua` field means a macro, a `smgf_config` member, a parse block in
   `load_config` ([src/smgf.c](src/smgf.c)), and a `@field` in `docs-api/library/smgf.lua`.
