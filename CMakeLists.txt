@@ -331,6 +331,14 @@ endif()
 #   install(IMPORTED_RUNTIME_ARTIFACTS SDL2::SDL2 RUNTIME DESTINATION .)
 # endif()
 
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/docs-api/"
+  DESTINATION "devtools/lsp"
+  PATTERN ".DS_Store" EXCLUDE
+)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/CLAUDE.game-template.md"
+  DESTINATION "devtools"
+)
+
 if(EMSCRIPTEN)
   # Emscripten does not copy js, wasm & data files (bug?):
   install(FILES
